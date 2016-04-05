@@ -28,6 +28,8 @@ function LUNCHVOTE() {
   return ret;
 }
 
+//Input: Several ranges representing ballots
+//Output: A sorted list of legal candidates
 function CANDIDATES() {
   //Get ballots from arguments
   var ballots = [];
