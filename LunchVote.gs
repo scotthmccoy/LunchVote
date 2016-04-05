@@ -28,6 +28,19 @@ function LUNCHVOTE() {
   return ret;
 }
 
+function CANDIDATES() {
+  //Get ballots from arguments
+  var ballots = [];
+  for (var i=0; i<arguments.length; i++) {
+    //Get a ballot (a cell range) and walk its contents
+    var ballot = arguments[i];
+    ballots.push(ballot);
+  }  
+
+  var legalCandidates = getLegalCandidates(ballots);
+  return legalCandidates;
+}
+
 //Creates an alphabetized list of all candidates 
 function getLegalCandidates(ballots) {
   var legalCandidates = {};
