@@ -16,8 +16,8 @@ function LUNCHVOTE() {
     return ret;
 }
 
-//Input: Several ranges, the first of which is the list of legal candidates, and the rest of which are rankings for those candidates.
-//Output: The ranking for each candidate
+//Input: Several ranges, the first of which is the list of legal candidates, and the rest of which are numerical rankings for those candidates.
+//Output: The numerical ranking for each candidate in the list of legal candidates
 function LUNCHVOTE_RANK() {
     if (arguments.length < 2) {
         return "Usage: LUNCHVOTE_RANK(candidates, ballot_1, ballot_2, ... ballot_n)";
@@ -76,7 +76,7 @@ function LUNCHVOTE_RANK() {
             
             //If it's a new rank, push the candidates in the previous rank and add a new empty rank
             if (rank != currentRank) {
-                ballot.push(ballotRank);
+                ballot.push(ballotRank.sort());
                 currentRank = rank;
                 ballotRank = [];
             }
@@ -85,16 +85,22 @@ function LUNCHVOTE_RANK() {
             ballotRank.push(candidate);
         }
         //Append the last rank
-        ballot.push(ballotRank);
+        ballot.push(ballotRank.sort());
         
         //Append ballot to ballots
         ballots.push(ballot);
     }
     
+    
+    var packedCandidates = packCandidates(ballots);
+    return packedCandidates;
+    
     //Run the election
     var electionResults = runElection(legalCandidates, ballots);
     
-    //Re-map the results back to a single array
+    ///////////////////////////////////////////
+    //Map the results back to a single array
+    ///////////////////////////////////////////
     
     //Make a copy of legalCandidates
     var results = legalCandidates.slice();
@@ -129,6 +135,48 @@ function CANDIDATES() {
     
     var legalCandidates = getLegalCandidates(ballots);
     return legalCandidates;
+}
+
+
+//Input: array of ballots (2-D arrays)
+//Output: A 2D array of candidates that are always grouped together
+function packCandidates(ballots) {
+    if (ballots.length == 0) {
+        return [[]];
+    }
+    
+    if (ballots.length == 1) {
+        return ballots;
+    }
+    
+    //Use the first ballot as the first set of candidateGroups
+    var candidateGroups = ballots[0].slice(0);
+    var candidateGroupsNext = [];
+    
+    //Walk the ballots
+    for (var i=1; i<ballots.length; i++) {
+        
+        var ballot = ballots[i];
+        
+        //Walk the ballot
+        for (var j=0; j<ballot.length; j++) {
+            var ballotRank = ballot[j];
+            
+            //Walk all the candidate groups and find intersections
+            for (var k=0; k<candidateGroups.length; k++) {
+                var candidateGroup = candidateGroups[k];
+                var intersection = intersect_safe(candidateGroup, ballotRank);
+                if (intersection.length >= 2) {
+                    candidateGroupsNext.push(intersection);
+                }
+            }
+        }
+        
+        candidateGroups = candidateGroupsNext;
+        candidateGroupsNext = [];
+    }
+    
+    return candidateGroups;
 }
 
 
@@ -443,6 +491,38 @@ function addMatrices(matrices) {
     
 }
 
+//From http://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript
+/* finds the intersection of
+ * two arrays in a simple fashion.
+ *
+ * PARAMS
+ *  a - first array, must already be sorted
+ *  b - second array, must already be sorted
+ *
+ * NOTES
+ *
+ *  Should have O(n) operations, where n is
+ *    n = MIN(a.length(), b.length())
+ */
+function intersect_safe(a, b)
+{
+    var ai=0, bi=0;
+    var result = [];
+    
+    while( ai < a.length && bi < b.length )
+    {
+        if      (a[ai] < b[bi] ){ ai++; }
+        else if (a[ai] > b[bi] ){ bi++; }
+        else /* they're equal */
+        {
+            result.push(a[ai]);
+            ai++;
+            bi++;
+        }
+    }
+    
+    return result;
+}
 
 //////////////////////////////////////////////////////////////
 // Testing
@@ -784,7 +864,7 @@ function test() {
                 [0,0,1],
                 [0,0,0]];
     actual = processAndConvert([["A"],["B", "B"],["C"]], ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processAndConvert Dupe In Middle", expected, actual);
+    allTestsPassed = allTestsPassed && expectEquals("processAndConvert Dupe In Middle", expected, actual);  
     
     
     expected = [[0,1,1],
