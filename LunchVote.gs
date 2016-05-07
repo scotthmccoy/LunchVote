@@ -91,12 +91,18 @@ function LUNCHVOTE_RANK() {
         ballots.push(ballot);
     }
     
-    
-    var packedCandidates = packCandidates(ballots);
-    return packedCandidates;
+    //TODO: move this into runElection
+    //Find groups of candidates that are always grouped together and treat them
+    //as single candidates
+    var candidateGroups = packCandidates(ballots);
+    var packedBallots = packBallots(candidateGroups, ballots);
+    var packedLegalCandidates = getLegalCandidates(ballots);
     
     //Run the election
-    var electionResults = runElection(legalCandidates, ballots);
+    var electionResults = runElection(packedLegalCandidates, packedBallots);
+    
+    //TODO: unpack the ballots
+    var unpackedResults = unpackElectionResults(candidateGroups, electionResults);
     
     ///////////////////////////////////////////
     //Map the results back to a single array
@@ -179,7 +185,75 @@ function packCandidates(ballots) {
     return candidateGroups;
 }
 
+//Input:
+//packedCandidates: an 2D array of groups of candidates (sorted by name) that always occur together on ballots.
+//ballots: 3-D array of groups of candidates representing several voter's preferences.
+function packBallots(packedCandidates, ballots) {
+    
+    //Walk the ballots and allow the first candidate in a group to be a placeholder for
+    //all candidates in that group.
+    for (var i=0; i<ballots.length; i++) {
+        
+        var ballot = ballots[i];
+        
+        //Walk the ballot
+        for (var j=0; j<ballot.length; j++) {
+            var ballotRank = ballot[j];
+            
+            //Walk all the packedCandidates and find intersections
+            for (var k=0; k<packedCandidates.length; k++) {
+                var candidateGroup = packedCandidates[k];
+                
+                //Do we see the first candidate in the group anywhere in the ballot rank?
+                var groupFoundAtIndex = ballotRank.indexOf(candidateGroup[0]);
+                if (groupFoundAtIndex != -1) {
+                    //Delete all but the first candidate in the group from the ballotRank.
+                    ballot[j].splice(groupFoundAtIndex+1,candidateGroup.length-1);
+                }
+            }
+        }
+    }
+    
+    return ballots;
+}
 
+
+//Input:
+//candidateGroups: the output of packCandidates on a set of ballots - a 2D array of
+//candidates that are always grouped together and may be treated as a single candidate.
+//electionResults: the output of runElection - a 2D array of candidates representing the outcome of the election assuming packed candidates.
+//Output:
+//A 2D array of candidates representing the "true" outcome of the election.
+function unpackElectionResults(candidateGroups, electionResults) {
+    
+    //Walk the ranks in the electionResult
+    for (var i=0; i<electionResults.length; i++) {
+        
+        var electionResultRank = electionResults[i];
+        
+        //Search for the "placeholder" candidates and replace them with the unpacked candidates
+        for (var k=0; k<packedCandidates.length; k++) {
+            var candidateGroup = packedCandidates[k];
+            
+            //Do we see the first candidate in the group anywhere in the ballot rank?
+            var groupFoundAtIndex = ballotRank.indexOf(candidateGroup[0]);
+            if (groupFoundAtIndex != -1) {
+                //Delete all but the first candidate in the group from the ballotRank.
+                ballot[j].splice(groupFoundAtIndex+1,candidateGroup.length-1);
+            }
+        }
+        
+    }
+    
+    return ballots;
+}
+
+
+//Input:
+//legalCandidates: a 2-D array
+//ballots: a 3-D array of candidate names representing several voters' preference orders
+//Output:
+//A 2D array of candidate names representing the election results
 function runElection(legalCandidates, ballots) {
     
     //Convert ballots to matrices
@@ -813,6 +887,26 @@ function test() {
     expected = ["A"];
     actual = getLegalCandidates([["A", "A"],["A"],["A"]]);
     allTestsPassed = allTestsPassed && expectEquals("getLegalCandidates Dupes", expected, actual);
+    
+    
+    //Test packCandidates
+    expected = [["A", "B"]];
+    actual = packCandidates([[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("packCandidates 1", expected, actual);
+    
+    expected = [["A", "B"], ["C", "D"]];
+    actual = packCandidates([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("packCandidates 2", expected, actual);
+    
+    
+    //Test packBallots
+    expected = [[["A"],["C"]], [["C"], ["A"]]];
+    actual = packBallots([[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("packBallots 1", expected, actual);
+    
+    expected = [[["A"],["E"],["C"]], [["E"], ["A", "C"]]];
+    actual = packBallots([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("packBallots 2", expected, actual);
     
     
     //Test processBallot
