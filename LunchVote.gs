@@ -229,23 +229,24 @@ function unpackElectionResults(candidateGroups, electionResults) {
     //Walk the ranks in the electionResult
     for (var i=0; i<electionResults.length; i++) {
         
-        var electionResultRank = electionResults[i];
+        
         
         //Search for the "placeholder" candidates and replace them with the unpacked candidates
-        for (var k=0; k<packedCandidates.length; k++) {
-            var candidateGroup = packedCandidates[k];
+        for (var j=0; j<candidateGroups.length; j++) {
+            var candidateGroup = candidateGroups[j];
             
             //Do we see the first candidate in the group anywhere in the ballot rank?
-            var groupFoundAtIndex = ballotRank.indexOf(candidateGroup[0]);
+            var groupFoundAtIndex = electionResults[i].indexOf(candidateGroup[0]);
             if (groupFoundAtIndex != -1) {
-                //Delete all but the first candidate in the group from the ballotRank.
-                ballot[j].splice(groupFoundAtIndex+1,candidateGroup.length-1);
+                //Logger.log("Found " + JSON.stringify(candidateGroup[0]) + " at " + groupFoundAtIndex + " in " + JSON.stringify(electionResults[i]))
+                
+                //Slice from 0 to where we found it, then concat the group, then concat the rest of the array.
+                electionResults[i] = electionResults[i].slice( 0, groupFoundAtIndex ).concat( candidateGroup ).concat( electionResults[i].slice( groupFoundAtIndex+1 ) );
             }
         }
-        
     }
     
-    return ballots;
+    return electionResults;
 }
 
 
@@ -273,7 +274,8 @@ function runElection(legalCandidates, ballots) {
 }
 
 
-//Creates an alphabetized list of all candidates
+//Input: A 3D array of candidates representing voters ranked preferences
+//Output: a 1D array of all unique candidates
 function getLegalCandidates(ballots) {
     var legalCandidates = {};
     
@@ -283,7 +285,6 @@ function getLegalCandidates(ballots) {
         
         for (j=0; j<ballot.length; j++) {
             //If the user accidentally sent 2 columns, ignore the subsequent columns using slice.
-            //TODO: Add support for ranks
             //Convert element to string and trim, then check for uniqueness by putting it into an associative array.
             var candidate = String(ballot[j]).trim();
             
@@ -901,12 +902,22 @@ function test() {
     
     //Test packBallots
     expected = [[["A"],["C"]], [["C"], ["A"]]];
-    actual = packBallots([[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    actual = packBallots([["A", "B"]],  [[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
     allTestsPassed = allTestsPassed && expectEquals("packBallots 1", expected, actual);
     
     expected = [[["A"],["E"],["C"]], [["E"], ["A", "C"]]];
-    actual = packBallots([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    actual = packBallots([["A", "B"],["C", "D"]],  [[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
     allTestsPassed = allTestsPassed && expectEquals("packBallots 2", expected, actual);
+    
+    
+    //Test unpackElectionResults
+    expected = [["E"], ["A", "B", "C", "D"]];
+    actual = unpackElectionResults([["A", "B"],["C", "D"]], [["E"], ["A", "C"]]);
+    allTestsPassed = allTestsPassed && expectEquals("unpackElectionResults 1", expected, actual);
+    
+    expected = [["A", "B"], ["E"], ["C", "D"]];
+    actual = unpackElectionResults([["A", "B"],["C", "D"]], [["A"], ["E"], ["C"]]);
+    allTestsPassed = allTestsPassed && expectEquals("unpackElectionResults 2", expected, actual);
     
     
     //Test processBallot
@@ -979,6 +990,7 @@ function test() {
                 [0,0,0]];
     actual = processAndConvert([["X"],["Y"],["Z"]], ["A", "B", "C"]);
     allTestsPassed = allTestsPassed && expectEquals("processAndConvert All Illegal Candidates", expected, actual);      
+    
     
     /////////////////////////
     //Test Shulze
