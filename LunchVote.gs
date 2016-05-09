@@ -54,8 +54,6 @@ function LUNCHVOTE_RANK() {
             var candidate = legalCandidates[j];
             var rank = voterInput[j][0];
             
-            
-            
             if (rank != "") {
                 candidateRankPairings.push([candidate, rank]);
             }
@@ -91,18 +89,11 @@ function LUNCHVOTE_RANK() {
         ballots.push(ballot);
     }
     
-    //TODO: move this into runElection
-    //Find groups of candidates that are always grouped together and treat them
-    //as single candidates
-    var candidateGroups = packCandidates(ballots);
-    var packedBallots = packBallots(candidateGroups, ballots);
-    var packedLegalCandidates = getLegalCandidates(ballots);
-    
     //Run the election
-    var electionResults = runElection(packedLegalCandidates, packedBallots);
+    var electionResults = runElection(legalCandidates, ballots);
+    //return electionResults;
     
-    //TODO: unpack the ballots
-    var unpackedResults = unpackElectionResults(candidateGroups, electionResults);
+    
     
     ///////////////////////////////////////////
     //Map the results back to a single array
@@ -110,6 +101,8 @@ function LUNCHVOTE_RANK() {
     
     //Make a copy of legalCandidates
     var results = legalCandidates.slice();
+    
+    
     
     //Replace candidate with Rank
     for (var i=0; i<electionResults.length; i++) {
@@ -257,19 +250,37 @@ function unpackElectionResults(candidateGroups, electionResults) {
 //A 2D array of candidate names representing the election results
 function runElection(legalCandidates, ballots) {
     
+    Logger.log("legalCandidates = " + JSON.stringify(legalCandidates));
+    Logger.log("ballots = " + JSON.stringify(ballots));
+    
+    
+    //Find groups of candidates that are always grouped together and treat them
+    //as single candidates
+    var candidateGroups = packCandidates(ballots);
+    var packedBallots = packBallots(candidateGroups, ballots);
+    var packedLegalCandidates = getLegalCandidates(packedBallots);
+    
+    Logger.log("candidateGroups = " + JSON.stringify(candidateGroups));
+    Logger.log("packedBallots = " + JSON.stringify(packedBallots));
+    Logger.log("packedLegalCandidates = " + JSON.stringify(packedLegalCandidates));
+    
     //Convert ballots to matrices
     var matrices = [];
-    for (var i=0; i<ballots.length; i++) {
+    for (var i=0; i<packedBallots.length; i++) {
         
-        var matrix = processAndConvert(ballots[i], legalCandidates);
+        var matrix = processAndConvert(packedBallots[i], packedLegalCandidates);
         
         matrices.push(matrix);
     }
     
     var pairwiseMatrix = addMatrices(matrices);
     var shulzeBeatpathMatrix = getShulzeBeatpathMatrix(pairwiseMatrix);
-    var ret = convertShulzeMatrixToElectionResult(shulzeBeatpathMatrix, legalCandidates);
-    return ret;
+    var electionResults = convertShulzeMatrixToElectionResult(shulzeBeatpathMatrix, packedLegalCandidates);
+    
+    
+    //Unpack the results
+    var unpackedResults = unpackElectionResults(candidateGroups, electionResults);
+    return unpackedResults;
     
 }
 
@@ -899,6 +910,10 @@ function test() {
     actual = packCandidates([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
     allTestsPassed = allTestsPassed && expectEquals("packCandidates 2", expected, actual);
     
+    expected = [];
+    actual = packCandidates([[["A", "X", "B"],["C"]], [["C"], ["A", "B"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("packCandidates 3 - contiguous", expected, actual);
+    
     
     //Test packBallots
     expected = [[["A"],["C"]], [["C"], ["A"]]];
@@ -969,27 +984,27 @@ function test() {
                 [0,0,1],
                 [0,0,0]];
     actual = processAndConvert([["A"],["B", "B"],["C"]], ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processAndConvert Dupe In Middle", expected, actual);  
+    allTestsPassed = allTestsPassed && expectEquals("processAndConvert Dupe In Middle", expected, actual);
     
     
     expected = [[0,1,1],
                 [0,0,1],
                 [0,0,0]];
     actual = processAndConvert([["A"],["B"],["C", "B"]], ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processAndConvert In Different Ranks", expected, actual);    
+    allTestsPassed = allTestsPassed && expectEquals("processAndConvert In Different Ranks", expected, actual);
     
     
     expected = [[0,1,1],
                 [0,0,1],
                 [0,0,0]];
     actual = processAndConvert([["IllegalCandidate"],["A"],["B"],["B"]], ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processAndConvert Illegal Candidate", expected, actual);      
+    allTestsPassed = allTestsPassed && expectEquals("processAndConvert Illegal Candidate", expected, actual);
     
     expected = [[0,0,0],
                 [0,0,0],
                 [0,0,0]];
     actual = processAndConvert([["X"],["Y"],["Z"]], ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processAndConvert All Illegal Candidates", expected, actual);      
+    allTestsPassed = allTestsPassed && expectEquals("processAndConvert All Illegal Candidates", expected, actual);
     
     
     /////////////////////////
@@ -1002,32 +1017,45 @@ function test() {
     //Test LUNCHVOTE
     /////////////////////////
     
-    //Test LunchVote  
-    expected = [["E"], ["A"], ["C"], ["B"], ["D"]];  
-    actual = LUNCHVOTE.apply(this, shulzeWikiExampleTestBallots());
-    allTestsPassed = allTestsPassed && expectEquals("LunchVote Shulze Wiki Example", expected, actual);
+    /*
+     //Test LunchVote
+     expected = [["E"], ["A"], ["C"], ["B"], ["D"]];
+     actual = LUNCHVOTE.apply(this, shulzeWikiExampleTestBallots());
+     allTestsPassed = allTestsPassed && expectEquals("LunchVote Shulze Wiki Example", expected, actual);
+     
+     expected = [["A"], ["B"], ["C"]];
+     actual = LUNCHVOTE([["A"],["B"],["C"]], [["A"],["B"],["C"]]);
+     allTestsPassed = allTestsPassed && expectEquals("LunchVote Basic", expected, actual);
+     
+     /////////////////////////
+     //Test LUNCHVOTE_RANK
+     /////////////////////////
+     
+     
+     //Basic
+     expected = [["Results:"], ["1"], ["2"], ["3"]];
+     actual = LUNCHVOTE_RANK([["A"],["B"],["C"]], [["1"],["2"],["3"]]);
+     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Basic Example", expected, actual);
+     
+     //Shulze Wiki Example
+     var args = [[["A"],["B"],["C"],["D"],["E"]]];
+     var ballots = shulzeWikiExampleTestBallotsRanks();
+     for (i=0; i<ballots.length; i++) {
+     args.push(ballots[i]);
+     }
+     
+     expected = [["Results:"], ["2"], ["4"], ["3"], ["5"], ["1"]];
+     actual = LUNCHVOTE_RANK.apply(this, args);
+     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Shulze Wiki Example", expected, actual);
+     
+     */
     
-    expected = [["A"], ["B"], ["C"]];
-    actual = LUNCHVOTE([["A"],["B"],["C"]], [["A"],["B"],["C"]]);
-    allTestsPassed = allTestsPassed && expectEquals("LunchVote Basic", expected, actual);
-    
-    /////////////////////////
-    //Test LUNCHVOTE_RANK
-    /////////////////////////
-    expected = [["Results:"], ["1"], ["2"], ["3"]];
-    actual = LUNCHVOTE_RANK([["A"],["B"],["C"]], [["1"],["2"],["3"]]);
-    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Basic Example", expected, actual);
-    
-    
-    var args = [[["A"],["B"],["C"],["D"],["E"]]];
-    var ballots = shulzeWikiExampleTestBallotsRanks();  
-    for (i=0; i<ballots.length; i++) {
-        args.push(ballots[i]);
-    }
-    
-    expected = [["Results:"], ["2"], ["4"], ["3"], ["5"], ["1"]];  
-    actual = LUNCHVOTE_RANK.apply(this, args);
-    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Shulze Wiki Example", expected, actual);
+    //Wedding test
+    var guests = [["Alex Pastusak"], ["Emma McCoy"], ["Ethan McCoy"], ["Casey Senecal"], ["Cynthia Senecal"], ["Dana McCoy"], ["Elaine Lazuka"], ["Kathy McCoy"], ["Kevin McCoy"], ["Mark McCoy"], ["Patty Senecal"], ["Stan Lazuka"], ["Steve Senecal"], ["Ash Williford"], ["Brittany Suarez"], ["Roman Suarez"], ["Amy Lavoie"], ["Marc Shutman"], ["Michael Morena"], ["Sean Driskel"], ["Kathryn Senecal"], ["Kayla Gaskey"], ["Jameson Pastusak"], ["Cindy Bradley"], ["Lisa Robinson"], ["Rebecca Himot"], ["Sam Escobar"], ["Megan Dupont"], ["Hollee Brinlee"], ["Whitney Robinson"], ["Jeffrie Nova"], ["Jenn Nelson"], ["Peter Nova"], ["Rizwan Kassim"], ["Spin Bowman"], ["Mike Johnson"], ["Mike Senecal"], ["Mac Hawley"], ["Matt Cadwallader"], ["Peter Hastings"], ["Aidan Hay"], ["Bill (neighbor)"], ["Brian Gaskey"], ["Debbie Gilmore"], ["Don Robinson"], ["George (neighbor) "], ["Jessica Hay"], ["Kurt Hay"], ["Martha Senecal"], ["Mireia Lopez"], ["Mitchell Gaskey"], ["Nicole Hay"], ["Patrick Bradley"], ["Shyrel Gaskey"], ["Susan Hay"], ["Brittany Ramsey "], ["Nicole Garcia"], ["Aviva Sands"], ["Benjamin Bensadoun"], ["Xach Fromson"], ["Giancarlo"], ["Adam Poisal"], ["Alex Vuckovich"], ["Geneva Mynx"], ["Gwen Newton"], ["Lauren Mandel"], ["Mike Todd"], ["Molten Amber"], ["Pyro"], ["Sasha (Tangles)"], ["Scott Evans"], ["Teaa Bradley"], ["Scott Kimball"], ["Cassie Temeyosa (Radiio)"], ["Crispin Freeman"], ["Daniel Bedingfield"], ["Goldy Ishvakov"], ["Izobel Freeman"], ["Jessie Patterson"], ["Jilly Bee"], ["Kalani Patterson"], ["Nick Barone"], ["Nos Ferous"], ["Regan Remy"], ["Tim Gaskey"], ["Georgette Mastikian"], ["Legs"], ["Matt McCauley"], ["Nic Macek"], ["Patch Winstein"], ["Tasha McCauley"], ["Wolf Bradley"], ["Xana Huerta"], ["Carlin Kowalskie"], ["Jason Kowalskie"], ["Adam Vadnais"], ["Maria Endozo"], ["Jill Senecal"], ["Ben Colling"], ["Kenji Hojo"], ["Nugget"], ["Pam Shaffer"], ["Puppet"], ["Raquel Valencia"], ["Sara Parra"], ["Karen Hicks"], ["Kenny Katz"], ["Adam Cruz (Hop Scotch)"], ["Andrew Ratley"], ["Chrys Bowie"], ["Epik"], ["Etana Kopin"], ["Isis Okowita"], ["Jessica Townsend"], ["Jolie Silsy (Riskin)"], ["Joseph Windowstosky"], ["Justina Sexton"], ["Laura Noxon"], ["Michael Sellers"], ["Nikki Nishimoto"], ["Nova Lux"], ["Patrick Reid"], ["Schno Mozingo"], ["Tanya Leigh Armstrong"], ["TeaFaerie"], ["Victoria Basova"], ["Zack Mac"], ["Zoë Elliott"], ["Jason (Biscut)"], ["Jason McQueen +1"], ["Elayne Grgas"], ["Kalani Hicks"], ["Kianna Hicks"], ["Milena Grgas"], ["Rebecca Kieft"], ["Alice Caro"], ["Ashleigh Richman"], ["Brandon D. Nilles"], ["Brian Abe"], ["Colin Sprague"], ["Dean Richman"], ["Donald Strand"], ["Drew Murphy"], ["Drex"], ["Erin Berman"], ["Morgan Howe"], ["Mrs. Kieft"], ["Rachael Bieber"], ["Squirrel"], ["Tamara Wilborn"], ["Velvette Kraut"], ["Zev Berman"], ["Tara Strand"], ["Andrew Leroy"], ["Gina Vadnais"], ["Kurt Hay's mom"], ["Kate McCoy"], ["Ray McCoy"], ["Shanna Martini"], ["Aliss Wang"], ["Anastasia Krylov"], ["Monica Hojo"], ["Sydney Brushwood"], ["Keith McCoy"], ["Bryn Fields"], ["Josh Badger"], ["Joshua Gore"], ["Meg Waldow"], ["Alex Rubenstein"], ["Alexander Nicholson"], ["Amber Kusanagi"], ["Ash Rex"], ["Blair Rose Meisenheimer"], ["Blake Hudson Ducasse"], ["Jeremy Lee"], ["Jessica Fields Leslie"], ["Kat Holland"], ["Marissa Oberhelman"], ["Tim Handley"], ["Toli Carter"], ["Rachel Dolliver"], ["Hillery Hylla"], ["Kyle McCoy"], ["Adam David Gia"], ["Elvin Ong"], ["Miranda Grey"], ["Larry Grossberg"], ["Marueen Grossberg "], ["Ike ?"], ["Diane ?"], ["Christina Adrian"], ["Adrian Adrian"], ["Genay Watkins"], ["Ralph Watkins"], ["Pam ?"], ["Tang"], ["Kathy Torres"], ["Anna Vaccaro"], ["Anna Vaccaro's +1"], ["Sherri Lowenstein"], ["Sherri Lowenstein's +1"], ["Jason McQueen's +1"], ["Andrew Leroy's wife"], ["Emily Merrill"]];
+    var scottBallot = [["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["5"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"]];
+    var oliviaBallot = [["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"]];
+    actual = LUNCHVOTE_RANK(guests, oliviaBallot, scottBallot);
+    Logger.log(JSON.stringify(actual));
     
     
     if (allTestsPassed) {
