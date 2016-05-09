@@ -48,14 +48,29 @@ function LUNCHVOTE_RANK() {
         var candidateRankPairings = [];
         var ballot = [];
         
+        
+        
+        
         //Walk the list of candidates. For every candidate that the voter put a rank next to,
         //Push the pairing of that candidate and the rank into candidateRankPairings.
+        var maxRank = 0;
         for (var j=0; j<legalCandidates.length; j++) {
             var candidate = legalCandidates[j];
-            var rank = voterInput[j][0];
             
-            if (rank != "") {
-                candidateRankPairings.push([candidate, rank]);
+            //If parseInt fails it returns NaN. Treat that (or 0) as -1.
+            var rank = parseInt(voterInput[j][0]) || -1;
+            
+            candidateRankPairings.push([candidate, rank]);
+            
+            if (rank > maxRank) {
+                maxRank = rank;
+            }
+        }
+        
+        //Change all instances of blank or unparseable rank to ranked last.
+        for (j=0; j<candidateRankPairings.length; j++) {
+            if (candidateRankPairings[j][1] == -1) {
+                candidateRankPairings[j][1] = maxRank + 1;
             }
         }
         
@@ -95,9 +110,6 @@ function LUNCHVOTE_RANK() {
     
     //Run the election
     var electionResults = runElection(legalCandidates, ballots);
-    //return electionResults;
-    
-    
     
     ///////////////////////////////////////////
     //Map the results back to a single array
@@ -105,8 +117,6 @@ function LUNCHVOTE_RANK() {
     
     //Make a copy of legalCandidates
     var results = legalCandidates.slice();
-    
-    
     
     //Replace candidate with Rank
     for (var i=0; i<electionResults.length; i++) {
