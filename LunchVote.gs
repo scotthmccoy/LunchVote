@@ -59,34 +59,38 @@ function LUNCHVOTE_RANK() {
             }
         }
         
-        //Sort candidateRankPairings by rank
-        var candidateRankPairingsSorted = candidateRankPairings.sort(function(a,b){
-            return a[1]-b[1];
-        });
-        
-        //Walk candidateRankPairings and pack each candidate into a ballot
-        var currentRank = candidateRankPairingsSorted[0][1];
-        var ballotRank = [];
-        for (var j=0; j<candidateRankPairingsSorted.length; j++) {
+        //If the ballot is empty (an abstention), skip it.
+        if (candidateRankPairings.length > 0) {
             
-            var candidate = candidateRankPairingsSorted[j][0];
-            var rank = candidateRankPairingsSorted[j][1];
+            //Sort candidateRankPairings by rank
+            var candidateRankPairingsSorted = candidateRankPairings.sort(function(a,b){
+                return a[1]-b[1];
+            });
             
-            //If it's a new rank, push the candidates in the previous rank and add a new empty rank
-            if (rank != currentRank) {
-                ballot.push(ballotRank.sort());
-                currentRank = rank;
-                ballotRank = [];
+            //Walk candidateRankPairings and pack each candidate into a ballot
+            var currentRank = candidateRankPairingsSorted[0][1];
+            var ballotRank = [];
+            for (var j=0; j<candidateRankPairingsSorted.length; j++) {
+                
+                var candidate = candidateRankPairingsSorted[j][0];
+                var rank = candidateRankPairingsSorted[j][1];
+                
+                //If it's a new rank, push the candidates in the previous rank and add a new empty rank
+                if (rank != currentRank) {
+                    ballot.push(ballotRank.sort());
+                    currentRank = rank;
+                    ballotRank = [];
+                }
+                
+                //Add the candidate to the (possibly new) rank
+                ballotRank.push(candidate);
             }
+            //Append the last rank
+            ballot.push(ballotRank.sort());
             
-            //Add the candidate to the (possibly new) rank
-            ballotRank.push(candidate);
+            //Append ballot to ballots
+            ballots.push(ballot);
         }
-        //Append the last rank
-        ballot.push(ballotRank.sort());
-        
-        //Append ballot to ballots
-        ballots.push(ballot);
     }
     
     //Run the election
