@@ -200,8 +200,11 @@ function packBallots(packedCandidates, ballots) {
                 //Do we see the first candidate in the group anywhere in the ballot rank?
                 var groupFoundAtIndex = ballotRank.indexOf(candidateGroup[0]);
                 if (groupFoundAtIndex != -1) {
-                    //Delete all but the first candidate in the group from the ballotRank.
-                    ballot[j].splice(groupFoundAtIndex+1,candidateGroup.length-1);
+                    //Delete all other candidates in the group from this ballot rank
+                    for (var l=1; l<candidateGroup.length; l++) {
+                        //Delete all but the first candidate in the group from the ballotRank.
+                        ballot[j].splice(ballot[j].indexOf(candidateGroup[l]),1);
+                    }
                 }
             }
         }
@@ -277,10 +280,13 @@ function runElection(legalCandidates, ballots) {
     var shulzeBeatpathMatrix = getShulzeBeatpathMatrix(pairwiseMatrix);
     var electionResults = convertShulzeMatrixToElectionResult(shulzeBeatpathMatrix, packedLegalCandidates);
     
+    Logger.log("electionResults = " + JSON.stringify(electionResults));
     
     //Unpack the results
     var unpackedResults = unpackElectionResults(candidateGroups, electionResults);
+    Logger.log("unpackedResults = " + JSON.stringify(unpackedResults));
     return unpackedResults;
+    
     
 }
 
@@ -295,15 +301,16 @@ function getLegalCandidates(ballots) {
         var ballot = ballots[i];
         
         for (j=0; j<ballot.length; j++) {
-            //If the user accidentally sent 2 columns, ignore the subsequent columns using slice.
-            //Convert element to string and trim, then check for uniqueness by putting it into an associative array.
-            var candidate = String(ballot[j]).trim();
             
-            if (candidate == "") {
-                //Bail at the first empty candidate so we don't walk an entire empty column
-                break;
-            } else {
-                legalCandidates[candidate] = "1";
+            var ballotRank = ballot[j];
+            
+            for (var k=0; k<ballotRank.length; k++) {
+                
+                var candidate = String(ballotRank[k]).trim();
+                
+                if (candidate != "") {
+                    legalCandidates[candidate] = "1";
+                }
             }
         }
     }
@@ -893,11 +900,11 @@ function test() {
     
     //Test getLegalCandidates
     expected = ["A1", "A2", "B", "C"];
-    actual = getLegalCandidates([["A1", "A2"],["B"],["C"]]);
+    actual = getLegalCandidates([[["A1", "A2"],["B"],["C"]]]);
     allTestsPassed = allTestsPassed && expectEquals("getLegalCandidates Basic", expected, actual);
     
     expected = ["A"];
-    actual = getLegalCandidates([["A", "A"],["A"],["A"]]);
+    actual = getLegalCandidates([[["A", "A"],["A"],["A"]]]);
     allTestsPassed = allTestsPassed && expectEquals("getLegalCandidates Dupes", expected, actual);
     
     
@@ -1055,7 +1062,7 @@ function test() {
     var scottBallot = [["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["5"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"]];
     var oliviaBallot = [["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"]];
     actual = LUNCHVOTE_RANK(guests, oliviaBallot, scottBallot);
-    Logger.log(JSON.stringify(actual));
+    //Logger.log(JSON.stringify(actual));
     
     
     if (allTestsPassed) {
