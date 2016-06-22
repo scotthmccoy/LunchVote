@@ -1,24 +1,28 @@
-//Input: several ranges representing ballots
-//Output: a Shulze-Ranking of the candidates
-function LUNCHVOTE() {
-    
-    //Get ballots from arguments
-    var ballots = [];
-    for (var i=0; i<arguments.length; i++) {
-        //Get a ballot (a cell range) and walk its contents
-        var ballot = arguments[i];
-        ballots.push(ballot);
-    }
-    
-    var legalCandidates = getLegalCandidates(ballots);
-    var ret = runElection(legalCandidates, ballots);
-    
-    return ret;
+
+function onOpen() {
+    SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
+    .createMenu('Custom Menu')
+    .addItem('Show sidebar', 'showSidebar')
+    .addToUi();
 }
+
+function showSidebar() {
+    var html = HtmlService.createHtmlOutput("<b>Hello world!</b>")
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+    .setTitle('My custom sidebar')
+    .setWidth(300);
+    SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
+    .showSidebar(html);
+}
+
+
+
+
+
 
 //Input: Several ranges, the first of which is the list of legal candidates, and the rest of which are numerical rankings for those candidates.
 //Output: The numerical ranking for each candidate in the list of legal candidates
-function LUNCHVOTE_RANK() {
+function LUNCHVOTE() {
     if (arguments.length < 2) {
         return "Usage: LUNCHVOTE_RANK(candidates, ballot_1, ballot_2, ... ballot_n)";
     }
@@ -137,18 +141,7 @@ function LUNCHVOTE_RANK() {
     return results;
 }
 
-function CANDIDATES() {
-    //Get ballots from arguments
-    var ballots = [];
-    for (var i=0; i<arguments.length; i++) {
-        //Get a ballot (a cell range) and walk its contents
-        var ballot = arguments[i];
-        ballots.push(ballot);
-    }
-    
-    var legalCandidates = getLegalCandidates(ballots);
-    return legalCandidates;
-}
+
 
 
 //Input: array of ballots (2-D arrays)
@@ -1053,14 +1046,6 @@ function test() {
     expected = [["Results:"], [2], [4], [3], [5], [1]];
     actual = LUNCHVOTE_RANK.apply(this, args);
     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Shulze Wiki Example", expected, actual);
-    
-    
-    
-    //Wedding test
-    //    var guests = [["Alex Pastusak"], ["Emma McCoy"], ["Ethan McCoy"], ["Casey Senecal"], ["Cynthia Senecal"], ["Dana McCoy"], ["Elaine Lazuka"], ["Kathy McCoy"], ["Kevin McCoy"], ["Mark McCoy"], ["Patty Senecal"], ["Stan Lazuka"], ["Steve Senecal"], ["Ash Williford"], ["Brittany Suarez"], ["Roman Suarez"], ["Amy Lavoie"], ["Marc Shutman"], ["Michael Morena"], ["Sean Driskel"], ["Kathryn Senecal"], ["Kayla Gaskey"], ["Jameson Pastusak"], ["Cindy Bradley"], ["Lisa Robinson"], ["Rebecca Himot"], ["Sam Escobar"], ["Megan Dupont"], ["Hollee Brinlee"], ["Whitney Robinson"], ["Jeffrie Nova"], ["Jenn Nelson"], ["Peter Nova"], ["Rizwan Kassim"], ["Spin Bowman"], ["Mike Johnson"], ["Mike Senecal"], ["Mac Hawley"], ["Matt Cadwallader"], ["Peter Hastings"], ["Aidan Hay"], ["Bill (neighbor)"], ["Brian Gaskey"], ["Debbie Gilmore"], ["Don Robinson"], ["George (neighbor) "], ["Jessica Hay"], ["Kurt Hay"], ["Martha Senecal"], ["Mireia Lopez"], ["Mitchell Gaskey"], ["Nicole Hay"], ["Patrick Bradley"], ["Shyrel Gaskey"], ["Susan Hay"], ["Brittany Ramsey "], ["Nicole Garcia"], ["Aviva Sands"], ["Benjamin Bensadoun"], ["Xach Fromson"], ["Giancarlo"], ["Adam Poisal"], ["Alex Vuckovich"], ["Geneva Mynx"], ["Gwen Newton"], ["Lauren Mandel"], ["Mike Todd"], ["Molten Amber"], ["Pyro"], ["Sasha (Tangles)"], ["Scott Evans"], ["Teaa Bradley"], ["Scott Kimball"], ["Cassie Temeyosa (Radiio)"], ["Crispin Freeman"], ["Daniel Bedingfield"], ["Goldy Ishvakov"], ["Izobel Freeman"], ["Jessie Patterson"], ["Jilly Bee"], ["Kalani Patterson"], ["Nick Barone"], ["Nos Ferous"], ["Regan Remy"], ["Tim Gaskey"], ["Georgette Mastikian"], ["Legs"], ["Matt McCauley"], ["Nic Macek"], ["Patch Winstein"], ["Tasha McCauley"], ["Wolf Bradley"], ["Xana Huerta"], ["Carlin Kowalskie"], ["Jason Kowalskie"], ["Adam Vadnais"], ["Maria Endozo"], ["Jill Senecal"], ["Ben Colling"], ["Kenji Hojo"], ["Nugget"], ["Pam Shaffer"], ["Puppet"], ["Raquel Valencia"], ["Sara Parra"], ["Karen Hicks"], ["Kenny Katz"], ["Adam Cruz (Hop Scotch)"], ["Andrew Ratley"], ["Chrys Bowie"], ["Epik"], ["Etana Kopin"], ["Isis Okowita"], ["Jessica Townsend"], ["Jolie Silsy (Riskin)"], ["Joseph Windowstosky"], ["Justina Sexton"], ["Laura Noxon"], ["Michael Sellers"], ["Nikki Nishimoto"], ["Nova Lux"], ["Patrick Reid"], ["Schno Mozingo"], ["Tanya Leigh Armstrong"], ["TeaFaerie"], ["Victoria Basova"], ["Zack Mac"], ["Zoë Elliott"], ["Jason (Biscut)"], ["Jason McQueen +1"], ["Elayne Grgas"], ["Kalani Hicks"], ["Kianna Hicks"], ["Milena Grgas"], ["Rebecca Kieft"], ["Alice Caro"], ["Ashleigh Richman"], ["Brandon D. Nilles"], ["Brian Abe"], ["Colin Sprague"], ["Dean Richman"], ["Donald Strand"], ["Drew Murphy"], ["Drex"], ["Erin Berman"], ["Morgan Howe"], ["Mrs. Kieft"], ["Rachael Bieber"], ["Squirrel"], ["Tamara Wilborn"], ["Velvette Kraut"], ["Zev Berman"], ["Tara Strand"], ["Andrew Leroy"], ["Gina Vadnais"], ["Kurt Hay's mom"], ["Kate McCoy"], ["Ray McCoy"], ["Shanna Martini"], ["Aliss Wang"], ["Anastasia Krylov"], ["Monica Hojo"], ["Sydney Brushwood"], ["Keith McCoy"], ["Bryn Fields"], ["Josh Badger"], ["Joshua Gore"], ["Meg Waldow"], ["Alex Rubenstein"], ["Alexander Nicholson"], ["Amber Kusanagi"], ["Ash Rex"], ["Blair Rose Meisenheimer"], ["Blake Hudson Ducasse"], ["Jeremy Lee"], ["Jessica Fields Leslie"], ["Kat Holland"], ["Marissa Oberhelman"], ["Tim Handley"], ["Toli Carter"], ["Rachel Dolliver"], ["Hillery Hylla"], ["Kyle McCoy"], ["Adam David Gia"], ["Elvin Ong"], ["Miranda Grey"], ["Larry Grossberg"], ["Marueen Grossberg "], ["Ike ?"], ["Diane ?"], ["Christina Adrian"], ["Adrian Adrian"], ["Genay Watkins"], ["Ralph Watkins"], ["Pam ?"], ["Tang"], ["Kathy Torres"], ["Anna Vaccaro"], ["Anna Vaccaro's +1"], ["Sherri Lowenstein"], ["Sherri Lowenstein's +1"], ["Jason McQueen's +1"], ["Andrew Leroy's wife"], ["Emily Merrill"]];
-    //    var scottBallot = [["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["5"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"]];
-    //    var oliviaBallot = [["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["1"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["2"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["3"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"], ["4"]];
-    //    actual = LUNCHVOTE_RANK(guests, oliviaBallot, scottBallot);
     
     
     //Sanitize Inputs Test
