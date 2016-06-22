@@ -1,21 +1,77 @@
+///////////////
+//UI
+///////////////
 
+//Runs when spreadsheet loads
 function onOpen() {
     SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
-    .createMenu('Custom Menu')
-    .addItem('Show sidebar', 'showSidebar')
+    .createMenu('LunchVote')
+    .addItem('Create Example Election', 'createExampleElection')
+    .addItem('Show Documentation Sidebar', 'showDocumentationSidebar')
     .addToUi();
 }
 
-function showSidebar() {
-    var html = HtmlService.createHtmlOutput("<b>Hello world!</b>")
+//Run by clicking on LunchVote ->
+function showDocumentationSidebar() {
+    var html = HtmlService.createHtmlOutputFromFile("Sidebar.html")
     .setSandboxMode(HtmlService.SandboxMode.IFRAME)
-    .setTitle('My custom sidebar')
+    .setTitle('Documentation')
     .setWidth(300);
     SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
     .showSidebar(html);
 }
 
-
+function createExampleElection() {
+    //TODO: Check to see if a sheet exists named Example Election
+    
+    //Create Sheet
+    var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (activeSpreadsheet.getSheetByName("Example Election") == null) {
+        activeSpreadsheet.insertSheet("Example Election");
+    } else {
+        var x = 1;
+        while (activeSpreadsheet.getSheetByName("Example Election (" + x + ")") != null) {
+            x++;
+        }
+        activeSpreadsheet.insertSheet("Example Election (" + x + ")");
+    }
+    
+    var sheet = SpreadsheetApp.getActiveSheet();
+    sheet.setFrozenRows(1);
+    
+    sheet.getRange('A1').setValue("Candidates");
+    sheet.getRange('A2').setValue("Panera Bread");
+    sheet.getRange('A3').setValue("In-N-Out");
+    sheet.getRange('A4').setValue("Don Cuco");
+    sheet.getRange('A5').setValue("Sugarfish Sushi");
+    sheet.getRange('A6').setValue("Taco Bell");
+    sheet.getRange('A7').setValue("The Hat");
+    
+    sheet.getRange('A1:1').setFontWeight("bold");
+    
+    sheet.getRange('C1').setValue("Scott");
+    sheet.getRange('C2').setValue("2");
+    sheet.getRange('C3').setValue("1");
+    sheet.getRange('C4').setValue("3");
+    
+    sheet.getRange('D1').setValue("Rodrigo");
+    sheet.getRange('D2').setValue("2000");
+    sheet.getRange('D3').setValue("1000");
+    sheet.getRange('D4').setValue("3000");
+    
+    sheet.getRange('E1').setValue("Olivia");
+    sheet.getRange('E5').setValue("1");
+    
+    sheet.getRange('F1').setValue("Brittany");
+    sheet.getRange('F5').setValue("1");
+    sheet.getRange('F4').setValue("2");
+    
+    sheet.getRange('G1').setValue("Ash");
+    sheet.getRange('G5').setValue("2");
+    sheet.getRange('G4').setValue("1");
+    
+    sheet.getRange('B1').setValue("=LUNCHVOTE(A2:A, C2:C, D2:D, E2:E, F2:F, G2:G)");
+}
 
 
 
@@ -24,7 +80,7 @@ function showSidebar() {
 //Output: The numerical ranking for each candidate in the list of legal candidates
 function LUNCHVOTE() {
     if (arguments.length < 2) {
-        return "Usage: LUNCHVOTE_RANK(candidates, ballot_1, ballot_2, ... ballot_n)";
+        return "Usage: =LUNCHVOTE(candidates, ballot_1, ballot_2, ... ballot_n)";
     }
     
     var legalCandidates = arguments[0];
