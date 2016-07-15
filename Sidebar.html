@@ -1,5 +1,30 @@
 <html>
-<b>Documentation</b>
-<p>Usage: =LUNCHVOTE(candidates, ballot_1, ballot_2, ... ballot_n)</p>
-<p><a href="https://www.youtube.com/watch?v=6kiz4JSlj3k">Help Video</a></p>
+<h1>LUNCHVOTE</h1>
+<p>Given list of candidates and ranked ballots, calculates an election result using the <a href="https://en.wikipedia.org/wiki/Schulze_method">Shulze Method</a> (pronounced SHULTZ). Of the <a href="https://en.wikipedia.org/wiki/Condorcet_method#Evaluation_by_criteria">Condorcet methods</a>, Schulze was chosen over Ranked Pairs due to:</p>
+<ol>
+  <li>Shulze allows for ties on ballots. For example, a voter could express that their #1 preference is Burgers, but their #2 preferences are <i>either</i> Tacos or Sushi. Ranked Pairs requires that all candidates be ranked with unique numbers which can be burdensome for voters when there are many candidates.</li>
+  <li>Shulze runs in O(n^3) time while Ranked Pairs runs in O(n^4). This is a significant difference, especially for an algorithm implemented in javascript!</li>
+</ol>
+
+
+
+<h3>Sample Usage</h3>
+
+<p><code>LUNCHVOTE(A2:A, B2:B, C2:C, D2:D)</code></p>
+
+<h3>Syntax</h3>
+
+<p><code>LUNCHVOTE(candidate_list, ballot_1, ballot_2, ... ballot_n)</code></p>
+
+<ul>
+  <li><p><code>candidate_list</code> - The array or range containing unique candidate names. </p>
+    <ul>
+      <li><p>If <code>known_data_y</code> is a two-dimensional array or range,</li>
+    </ul>
+  </li>
+</ul>
+      
+
+
+
 </html>
