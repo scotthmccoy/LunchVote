@@ -1,30 +1,50 @@
 <html>
 <h1>LUNCHVOTE</h1>
-<p>Given list of candidates and ranked ballots, calculates an election result using the <a href="https://en.wikipedia.org/wiki/Schulze_method">Shulze Method</a> (pronounced SHULTZ). Of the <a href="https://en.wikipedia.org/wiki/Condorcet_method#Evaluation_by_criteria">Condorcet methods</a>, Schulze was chosen over Ranked Pairs due to:</p>
-<ol>
-  <li>Shulze allows for ties on ballots. For example, a voter could express that their #1 preference is Burgers, but their #2 preferences are <i>either</i> Tacos or Sushi. Ranked Pairs requires that all candidates be ranked with unique numbers which can be burdensome for voters when there are many candidates.</li>
-  <li>Shulze runs in O(n^3) time while Ranked Pairs runs in O(n^4). This is a significant difference, especially for an algorithm implemented in javascript!</li>
-</ol>
-
+<p>Given list of candidates and ranked ballots, calculates an election result.</p>
 
 
 <h3>Sample Usage</h3>
 
-<p><code>LUNCHVOTE(A2:A, B2:B, C2:C, D2:D)</code></p>
+<p><code>LUNCHVOTE(A2:A, C2:C, D2:D, E2:E)</code></p>
 
 <h3>Syntax</h3>
 
 <p><code>LUNCHVOTE(candidate_list, ballot_1, ballot_2, ... ballot_n)</code></p>
 
 <ul>
-  <li><p><code>candidate_list</code> - The array or range containing unique candidate names. </p>
+  <li><p><code>candidate_list</code> - a vertical range containing unique candidate names.</p>
     <ul>
       <li><p>If <code>known_data_y</code> is a two-dimensional array or range,</li>
     </ul>
   </li>
+  
+  <li><p><code>ballot</code> - a vertical range containing numerical representation of a voter's preference order for the candidates specified in <code>candidate_list</code>.</p>
+    <ul>
+      <li>A lower number indicates greater preference. For example, If you ranked hypothetical candidates A, B, and C as 1, 2, 3, that means you prefer A to B, and B to C.</li>
+      <li>Any candidate not ranked on a ballot is considered tied for last place. For example, if you had candidates A through Z, and ranked A, B and C as 1, 2, and 3, that means you prefer A to B, B to C, and C to <i>every other candidate.</i></li>
+      <li>You can use whatever numbers you like. If in the previous example you ranked A as 1337, B as 24601 and C as 999999, that still means you prefer A to B, B to C, and C to every other candidate.</li>
+      <li>Abstentions: If <code>ballot</code> is blank or does not contain any numerical values, it is considered an abstention and has no effect .</li>      
+    </ul>
+  </li>  
+  
 </ul>
       
+      
 
+<h3>How Does It Work? and Further Reading</h3>
+<p>LunchVote uses the <a href="https://en.wikipedia.org/wiki/Schulze_method">Shulze Method</a> (pronounced SHULTZ, like the creator of Charlie Brown) to 
+determine election outcomes. Shulze is a <a href="https://en.wikipedia.org/wiki/Condorcet_method">Condorcet Methods</a>, a family of election methods 
+that have the wonderful property of selecting the candidate that would beat every other candidate in a one-on-one election (if such a candidate exists).
+Though not everyone agrees that the Condorcet Methods are ideal (most notably, in my opinion, the folks at <a href="http://rangevoting.org/">RangeVoting.org</a>. 
+I personally can't think of a case where if a 
+
+
+
+<a href="https://en.wikipedia.org/wiki/Condorcet_method#Evaluation_by_criteria">Condorcet methods</a>, Schulze was chosen over Ranked Pairs due to:</p>
+<ol>
+  <li>Shulze allows for ties on ballots. For example, a voter could express that their #1 preference is Burgers, but their #2 preferences are <i>either</i> Tacos or Sushi. Ranked Pairs requires that all candidates be ranked with unique numbers which can be burdensome for voters when there are many candidates.</li>
+  <li>Shulze runs in O(n^3) time while Ranked Pairs runs in O(n^4). This is a significant difference, especially for an algorithm implemented in JavaScript!</li>
+</ol>
 
 
 </html>
