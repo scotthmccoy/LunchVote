@@ -14,16 +14,16 @@
 <ul>
   <li><p><code>candidate_list</code> - a vertical range containing unique candidate names.</p>
     <ul>
-      <li><p>If <code>known_data_y</code> is a two-dimensional array or range,</li>
+      <li>The first empty space in <code>candidate_list</code> terminates the list. For example if you had a list of 10 candidates and cleared the 8th row, LUNCHVOTE would </li>
     </ul>
   </li>
   
   <li><p><code>ballot</code> - a vertical range containing numerical representation of a voter's preference order for the candidates specified in <code>candidate_list</code>.</p>
     <ul>
-      <li>A lower number indicates greater preference. For example, If you ranked hypothetical candidates A, B, and C as 1, 2, 3, that means you prefer A to B, and B to C.</li>
-      <li>Any candidate not ranked on a ballot is considered tied for last place. For example, if you had candidates A through Z, and ranked A, B and C as 1, 2, and 3, that means you prefer A to B, B to C, and C to <i>every other candidate.</i></li>
+      <li>A lower number indicates greater preference. For example, If you ranked hypothetical candidates A, B, and C as 1, 2, 3, that means you prefer <b>A to B</b>, and </b>B to C</b>.</li>
+      <li>Any candidate <i>not</i> ranked on a ballot is considered tied for last place. For example, if you had candidates A through Z, and ranked A, B and C as 1, 2, and 3, that means you prefer A to B, B to C, and C to <i>every other candidate.</i></li>
       <li>You can use whatever numbers you like. If in the previous example you ranked A as 1337, B as 24601 and C as 999999, that still means you prefer A to B, B to C, and C to every other candidate.</li>
-      <li>Abstentions: If <code>ballot</code> is blank or does not contain any numerical values, it is considered an abstention and has no effect .</li>      
+      <li>Abstentions: If <code>ballot</code> is blank or does not contain any numerical values, it is considered an abstention and has no effect on the election.</li>      
     </ul>
   </li>  
   
@@ -31,20 +31,33 @@
       
       
 
-<h3>How Does It Work? and Further Reading</h3>
-<p>LunchVote uses the <a href="https://en.wikipedia.org/wiki/Schulze_method">Shulze Method</a> (pronounced SHULTZ, like the creator of Charlie Brown) to 
-determine election outcomes. Shulze is a <a href="https://en.wikipedia.org/wiki/Condorcet_method">Condorcet Methods</a>, a family of election methods 
-that have the wonderful property of selecting the candidate that would beat every other candidate in a one-on-one election (if such a candidate exists).
-Though not everyone agrees that the Condorcet Methods are ideal (most notably, in my opinion, the folks at <a href="http://rangevoting.org/">RangeVoting.org</a>. 
-I personally can't think of a case where if a 
+<h3>How It Works and some Further Reading</h3>
+<p>LunchVote uses the <a href="https://en.wikipedia.org/wiki/Schulze_method">Schulze Method</a> (pronounced SHULTZ, like the creator of Charlie Brown) to 
+determine election outcomes. I briefly considered using <a href="https://en.wikipedia.org/wiki/Ranked_pairs">Ranked Pairs</a> or 
+<a href="https://en.wikipedia.org/wiki/Instant-runoff_voting">Instant Runoff Voting</a> but settled on Schulze due to:</p>
+
+<ul>
+  <li>Though IRV is easy to explain and <a href="https://en.wikipedia.org/wiki/Instant-runoff_voting#Global_use">used by many major countries and
+   organizations</a>, it fails the <a href="https://en.wikipedia.org/wiki/Condorcet_method">Condorcet Criterion</a>. Condorcet methods have the 
+   highly desirable property of selecting as the winner the candidate that would beat every other candidate in a one-on-one election (if 
+   such a candidate exists). For some thorough (if, in my opinion, fallacious) counter-arguments to the importance of the Condorcet Criterion, I recommend the folks 
+<a href="http://rangevoting.org/CondorcetExec.html">RangeVoting.org</a>.</li>
+   
+  <li>In an <a href="https://en.wikipedia.org/wiki/Condorcet_method#Evaluation_by_criteria">evaluation of Condorcet methods</a>, Schulze and Ranked Pairs are arguably 
+  the best.</li>
+  <li>Unlike IRV, Ranked Pairs and Schulze have the desirable quality of returning an ordered list of election results. As such, you can use 
+  either method to fill several vacant positions simultaneously. You simply let the <i>k</i> top-ranked candidates win the <i>k</i> available
+   seats. I've found this to be particularly useful for planning a wedding guest list! This property can also come in 
+  handy if your election winner is unusable for whatever reason in which case you simply use the next candidate on the election result list.</li>
+  <li>Ranked Pairs doesn't allow users to indicate ties on ballots, but Schulze does.</li>
+  <li>Schulze runs in O(n^3) time while Ranked Pairs runs in O(n^4). This is a huge difference in computation time, especially for an algorithm 
+  implemented in JavaScript!</li>
+</ul>
 
 
+ 
+ 
 
-<a href="https://en.wikipedia.org/wiki/Condorcet_method#Evaluation_by_criteria">Condorcet methods</a>, Schulze was chosen over Ranked Pairs due to:</p>
-<ol>
-  <li>Shulze allows for ties on ballots. For example, a voter could express that their #1 preference is Burgers, but their #2 preferences are <i>either</i> Tacos or Sushi. Ranked Pairs requires that all candidates be ranked with unique numbers which can be burdensome for voters when there are many candidates.</li>
-  <li>Shulze runs in O(n^3) time while Ranked Pairs runs in O(n^4). This is a significant difference, especially for an algorithm implemented in JavaScript!</li>
-</ol>
 
 
 </html>
