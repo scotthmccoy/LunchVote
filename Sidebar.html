@@ -5,10 +5,12 @@
 <h3>Quick Start</h3>
 <p>
 <ol>
-  <li>Select <i>LunchVote -> Create Example Election</i>. Don Cuco is the current winner, indicated by having a '1' next to it in the <b>Results</b> column.</li>
-  <li>Select cell B1 to see how to use the LUNCHVOTE formula.</li>
-  <li>Select column B and Select <i>Data -> Sort Sheet By Column B, A to Z</i>. Notice how the election results are unchanged - Don Cuco is still the winner. <b>You can sort on any column and it will not change the results of the election.</b></li>
-  <li>Add another voter by changing B1 to =LUNCHVOTE(A2:A, C2:C, D2:D, E2:E, F2:F, G2:G, H2:H)</li>
+  <li>Select <i>LunchVote -> Create Example Election</i> and watch it fill out a new sheet. Don Cuco is the current winner of this example election, indicated by having a '1' next to it in the <b>Results</b> column. This is because Don Cuco has broad-based support. It's Ash's first choice, Brittany's second choice, and both Rodrigo and Scott's third choice. It's effectively a second choice for Olivia as well since she didn't specify any preferences other than Sugarfish.</li>
+  <li>Select cell B1 to see how to use the LUNCHVOTE formula. The range B2:B is the list of <b>candidates</b>, the other ranges are the voters' <b>ballots</b>.</li>
+  <li>Lets add a ballot. <b>Change B1 to say =LUNCHVOTE(A2:A, C2:C, D2:D, E2:E, F2:F, G2:G, H2:H).</b></li>
+  <li>Note how the election results are unchanged. Don Cuco is still winning because Column H is empty. An empty ballot counts as an abstention. Lets change that! <b>Change cell H1 to say "Marc", and have him vote for Sugarfish as his first choice by putting a 1 in cell H5</b>.</li>
+  <li>Sugarfish should now be winning - you should see a 1 next to Sugarfish, a 2 next to In-N-Out, and 3s next to Don Cuco and Panera Bread. It's a bit hard to read though. Lets change that by sorting Column B! <b>Click on the "B" at the top of the column. A box with an arrow should appear next to your pointer. Click on that, then select "Sort Sheet A-Z"</b>.</li>
+  <li>Notice how the sheet is now sorted and easier to read, but election results are unchanged. <b>You can sort on any column and it will not affect the outcome of the election.</b></li>
 </ol>
 </p>
 
@@ -23,15 +25,15 @@
 <ul>
   <li><p><code>candidate_list</code> - a vertical range containing unique candidate names.</p>
     <ul>
-      <li>The first empty space in <code>candidate_list</code> terminates the list. For example if you had a list of 10 candidates and cleared the 8th row, LUNCHVOTE would </li>
+      <li>The first empty space in <code>candidate_list</code> terminates the list. For example if you had a list of 10 candidates and cleared the 8th row, LUNCHVOTE would Stop There.</li>
     </ul>
   </li>
   
   <li><p><code>ballot</code> - a vertical range containing numerical representation of a voter's preference order for the candidates specified in <code>candidate_list</code>.</p>
     <ul>
       <li>A lower number indicates greater preference. For example, If you ranked hypothetical candidates A, B, and C as 1, 2, 3, that means you prefer <b>A to B</b>, and </b>B to C</b>.</li>
-      <li>Any candidate <i>not</i> ranked on a ballot is considered tied for last place. For example, if you had candidates A through Z, and ranked A, B and C as 1, 2, and 3, that means you prefer A to B, B to C, and C to <i>every other candidate.</i></li>
-      <li>You can use whatever numbers you like. If in the previous example you ranked A as 1337, B as 24601 and C as 999999, that still means you prefer A to B, B to C, and C to every other candidate.</li>
+      <li>Any candidate <i>not</i> ranked on a ballot is considered tied for last place. For example, if you had candidates A through Z, and ranked A, B and C as 1, 2, and 3 but left every other candidate blank, that means you prefer A to B, B to C, and C to <i>every other candidate equally</i>.</li>
+      <li>The size of the number you use doesn't matter. If in the previous example you ranked A as 1337, B as 24601 and C as 999999, that still means you prefer A to B, B to C, and C to every other candidate. Use whatever numbers you like!</li>
       <li>Abstentions: If <code>ballot</code> is blank or does not contain any numerical values, it is considered an abstention and has no effect on the election.</li>      
     </ul>
   </li>  
