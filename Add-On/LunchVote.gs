@@ -76,8 +76,14 @@ function createExampleElection() {
 
 
 
-//Input: Several ranges, the first of which is the list of legal candidates, and the rest of which are numerical rankings for those candidates.
-//Output: The numerical ranking for each candidate in the list of legal candidates
+
+/**
+ * Calculates an election result
+ *
+ * @param {Array} Vertical range representing the list of legal candidates
+ * @param {...} Vertical ranges representing voters' ballots
+ * @customfunction
+ */
 function LUNCHVOTE() {
     if (arguments.length < 2) {
         return "Usage: =LUNCHVOTE(candidates, ballot_1, ballot_2, ... ballot_n)";

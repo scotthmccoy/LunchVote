@@ -1,0 +1,19 @@
+{
+	"name": "LunchVote",
+	"version": "1.1",
+	"description": "A Sheets extension to help you run ranked-ballot elections.",
+	"version": "1.1",
+	"manifest_version": 2,
+	"icons": {
+		"128": "icon_128.png"
+	},
+	"app": {
+
+	},
+	"icons":{
+		"icons": {
+			"16": "logo16.png",
+			"128": "logo.png"
+		}
+	}  
+}
