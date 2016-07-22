@@ -1,0 +1,5 @@
+Description:
+Allows you to quickly and easily run ranked-ballot elections in Sheets. Uses the Schulze Method, a Condorcet voting algorithm.
+
+Project Key:
+M64ZCpokQ9kYygNHVhrVhHTimZkoIcWwo
