@@ -336,8 +336,8 @@ function runElection(legalCandidates, ballots) {
     }
     
     var pairwiseMatrix = addMatrices(matrices);
-    var shulzeBeatpathMatrix = getShulzeBeatpathMatrix(pairwiseMatrix);
-    var electionResults = convertShulzeMatrixToElectionResult(shulzeBeatpathMatrix, packedLegalCandidates);
+    var schulzeBeatpathMatrix = getSchulzeBeatpathMatrix(pairwiseMatrix);
+    var electionResults = convertSchulzeMatrixToElectionResult(schulzeBeatpathMatrix, packedLegalCandidates);
     
     //Unpack the results
     var unpackedResults = unpackElectionResults(candidateGroups, electionResults);
@@ -453,7 +453,7 @@ function convertProcessedBallotToMatrix(processedBallot, numLegalCandidates) {
 
 //Input: A matrix of the number of voters who prefer candidate i to candidate j
 //Output: The strength of the strongest path from candidate i to candidate j
-function getShulzeBeatpathMatrix(pairwiseMatrix) {
+function getSchulzeBeatpathMatrix(pairwiseMatrix) {
     var numCandidates = pairwiseMatrix.length;
     var beatPathStrengthMatrix = generateMatrix(numCandidates, 0);
     
@@ -503,7 +503,7 @@ function getShulzeBeatpathMatrix(pairwiseMatrix) {
 
 //Input: a pairwise election matrix
 //Output: an array of sets of Candidate Names indicating election results
-function convertShulzeMatrixToElectionResult(pairwiseMatrix, legalCandidates) {
+function convertSchulzeMatrixToElectionResult(pairwiseMatrix, legalCandidates) {
     var numCandidates = pairwiseMatrix.length;
     
     //Start off with each candidate having won zero pairwise elections
@@ -708,7 +708,7 @@ function expect(name, expected, actual, shouldBeEqual) {
 /////////////////
 // Test Support
 /////////////////
-function shulzeWikiExampleTestBallots() {
+function schulzeWikiExampleTestBallots() {
     var ballots = [];
     
     for (x=1; x<=5; x++) {
@@ -747,7 +747,7 @@ function shulzeWikiExampleTestBallots() {
 }
 
 
-function shulzeWikiExampleTestBallotsRanks() {
+function schulzeWikiExampleTestBallotsRanks() {
     var ballots = [];
     
     for (x=1; x<=5; x++) {
@@ -787,10 +787,10 @@ function shulzeWikiExampleTestBallotsRanks() {
 
 
 
-function testShulze() {
+function testSchulze() {
     var testsPassing = true;
     
-    var ballots = shulzeWikiExampleTestBallots();
+    var ballots = schulzeWikiExampleTestBallots();
     
     
     var legalCandidates = getLegalCandidates(ballots);
@@ -813,10 +813,10 @@ function testShulze() {
                     [15, 12, 28, 0, 14],
                     [23, 27, 21, 31, 0]
                     ];
-    testsPassing = testsPassing && expectEquals("Shulze Wiki Example - Pairwise Matrix", expected, matrices);
+    testsPassing = testsPassing && expectEquals("Schulze Wiki Example - Pairwise Matrix", expected, matrices);
     
-    //Finally, test the Shulze Beatpath Matrix with this set
-    var shulzeBeatpathMatrix = getShulzeBeatpathMatrix(matrices);
+    //Finally, test the Schulze Beatpath Matrix with this set
+    var schulzeBeatpathMatrix = getSchulzeBeatpathMatrix(matrices);
     expected = [
                 [0, 28, 28, 30, 24],
                 [25, 0, 28, 33, 24],
@@ -824,12 +824,12 @@ function testShulze() {
                 [25, 28, 28, 0, 24],
                 [25, 28, 28, 31, 0]
                 ];
-    testsPassing = testsPassing && expectEquals("Shulze Wiki Example - Beatpath Matrix", expected, shulzeBeatpathMatrix);
+    testsPassing = testsPassing && expectEquals("Schulze Wiki Example - Beatpath Matrix", expected, schulzeBeatpathMatrix);
     
     //Convert the Beatpath Matrix to an election Result
     expected = [["E"], ["A"], ["C"], ["B"], ["D"]];
-    var electionResult = convertShulzeMatrixToElectionResult(shulzeBeatpathMatrix, legalCandidates);
-    testsPassing = testsPassing && expectEquals("Shulze Wiki Example - Election Results", expected, electionResult);
+    var electionResult = convertSchulzeMatrixToElectionResult(schulzeBeatpathMatrix, legalCandidates);
+    testsPassing = testsPassing && expectEquals("Schulze Wiki Example - Election Results", expected, electionResult);
     
     return testsPassing;
 }
@@ -1069,10 +1069,10 @@ function test() {
     
     
     /////////////////////////
-    //Test Shulze
+    //Test Schulze
     /////////////////////////
     
-    allTestsPassed = allTestsPassed && testShulze();
+    allTestsPassed = allTestsPassed && testSchulze();
     
     /////////////////////////
     //Test LUNCHVOTE
@@ -1083,16 +1083,16 @@ function test() {
     actual = LUNCHVOTE([["A"],["B"],["C"]], [["1"],["2"],["3"]]);
     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Basic Example", expected, actual);
     
-    //Shulze Wiki Example
+    //Schulze Wiki Example
     var args = [[["A"],["B"],["C"],["D"],["E"]]];
-    var ballots = shulzeWikiExampleTestBallotsRanks();
+    var ballots = schulzeWikiExampleTestBallotsRanks();
     for (i=0; i<ballots.length; i++) {
         args.push(ballots[i]);
     }
     
     expected = [["Results:"], [2], [4], [3], [5], [1]];
     actual = LUNCHVOTE.apply(this, args);
-    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Shulze Wiki Example", expected, actual);
+    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Schulze Wiki Example", expected, actual);
     
     
     //Sanitize Inputs Test
