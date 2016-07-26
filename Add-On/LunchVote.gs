@@ -1076,26 +1076,11 @@ function test() {
     
     /////////////////////////
     //Test LUNCHVOTE
-    /////////////////////////
-    
-    
-    //Test LunchVote
-    expected = [["E"], ["A"], ["C"], ["B"], ["D"]];
-    actual = LUNCHVOTE.apply(this, shulzeWikiExampleTestBallots());
-    allTestsPassed = allTestsPassed && expectEquals("LunchVote Shulze Wiki Example", expected, actual);
-    
-    expected = [["A"], ["B"], ["C"]];
-    actual = LUNCHVOTE([["A"],["B"],["C"]], [["A"],["B"],["C"]]);
-    allTestsPassed = allTestsPassed && expectEquals("LunchVote Basic", expected, actual);
-    
-    /////////////////////////
-    //Test LUNCHVOTE_RANK
-    /////////////////////////
-    
+    /////////////////////////    
     
     //Basic
     expected = [["Results:"], [1], [2], [3]];
-    actual = LUNCHVOTE_RANK([["A"],["B"],["C"]], [["1"],["2"],["3"]]);
+    actual = LUNCHVOTE([["A"],["B"],["C"]], [["1"],["2"],["3"]]);
     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Basic Example", expected, actual);
     
     //Shulze Wiki Example
@@ -1106,7 +1091,7 @@ function test() {
     }
     
     expected = [["Results:"], [2], [4], [3], [5], [1]];
-    actual = LUNCHVOTE_RANK.apply(this, args);
+    actual = LUNCHVOTE.apply(this, args);
     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Shulze Wiki Example", expected, actual);
     
     
@@ -1114,7 +1099,7 @@ function test() {
     var candidates = [["Foo "], ["Bar"], ["Baz"]];
     var scottBallot = [["1"], ["2"], ["3"]];
     expected = [["Results:"], [1], [2], [3]];
-    actual = LUNCHVOTE_RANK(candidates, scottBallot);
+    actual = LUNCHVOTE(candidates, scottBallot);
     allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Sanitize Inputs Test", expected, actual);
     
     if (allTestsPassed) {
