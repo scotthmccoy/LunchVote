@@ -90,22 +90,21 @@ function LUNCHVOTE() {
     }
     
     var legalCandidates = arguments[0];
+    var numLegalCandidates = 0;
     
     //Truncate legalCandidates to the first empty cell
     for (var i=0; i<legalCandidates.length; i++) {
         if (legalCandidates[i][0] == "") {
             legalCandidates = legalCandidates.slice(0,i);
+            break;
         }
     }
     
-    if (legalCandidates.length == 0) {
+    numLegalCandidates = i;
+    
+    if (numLegalCandidates == 0) {
         return "No legal candidates";
     }
-    
-    //Get the first element (the contents of the cell)
-    legalCandidates = legalCandidates.map(function(cell){
-        return cell[0].trim();
-    });
     
     //Extract Ballots
     var ballots = [];
@@ -114,19 +113,17 @@ function LUNCHVOTE() {
         var candidateRankPairings = [];
         var ballot = [];
         
-        
-        
-        
         //Walk the list of candidates. For every candidate that the voter put a rank next to,
         //Push the pairing of that candidate and the rank into candidateRankPairings.
         var maxRank = 0;
-        for (var j=0; j<legalCandidates.length; j++) {
-            var candidate = legalCandidates[j];
+        for (var j=0; j<numLegalCandidates; j++) {
             
-            //If parseInt fails it returns NaN. Treat that (or 0) as -1.
+            //Attempt to parse the value on that ballot slot as an int.
+            //If parseInt encounters a blank, it returns 0, if it fails it returns NaN.
+            //Treat either as -1, which is a placeholder for "rank this last"
             var rank = parseInt(voterInput[j][0]) || -1;
             
-            candidateRankPairings.push([candidate, rank]);
+            candidateRankPairings.push([j, rank]);
             
             if (rank > maxRank) {
                 maxRank = rank;
@@ -144,7 +141,7 @@ function LUNCHVOTE() {
         if (candidateRankPairings.length > 0) {
             
             //Sort candidateRankPairings by rank
-            var candidateRankPairingsSorted = candidateRankPairings.sort(function(a,b){
+            var candidateRankPairingsSorted = candidateRankPairings.sort(function(a,b) {
                 return a[1]-b[1];
             });
             
