@@ -1076,12 +1076,12 @@ function test() {
     
     /////////////////////////
     //Test LUNCHVOTE
-    /////////////////////////    
+    /////////////////////////
     
     //Basic
     expected = [["Results:"], [1], [2], [3]];
     actual = LUNCHVOTE([["A"],["B"],["C"]], [["1"],["2"],["3"]]);
-    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Basic Example", expected, actual);
+    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE Basic Example", expected, actual);
     
     //Schulze Wiki Example
     var args = [[["A"],["B"],["C"],["D"],["E"]]];
@@ -1092,7 +1092,7 @@ function test() {
     
     expected = [["Results:"], [2], [4], [3], [5], [1]];
     actual = LUNCHVOTE.apply(this, args);
-    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Schulze Wiki Example", expected, actual);
+    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE Schulze Wiki Example", expected, actual);
     
     
     //Sanitize Inputs Test
@@ -1100,7 +1100,7 @@ function test() {
     var scottBallot = [["1"], ["2"], ["3"]];
     expected = [["Results:"], [1], [2], [3]];
     actual = LUNCHVOTE(candidates, scottBallot);
-    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE_RANK Sanitize Inputs Test", expected, actual);
+    allTestsPassed = allTestsPassed && expectEquals("LUNCHVOTE Sanitize Inputs Test", expected, actual);
     
     if (allTestsPassed) {
         Logger.log("All Tests Passed!");
