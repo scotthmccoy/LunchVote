@@ -96,7 +96,6 @@ function LUNCHVOTE() {
     for (var i=0; i<legalCandidates.length; i++) {
         if (legalCandidates[i][0] == "") {
             legalCandidates = legalCandidates.slice(0,i);
-            break;
         }
     }
     
@@ -105,6 +104,13 @@ function LUNCHVOTE() {
     if (numLegalCandidates == 0) {
         return "No legal candidates";
     }
+  
+    //Flatten the array from 2D to 1D (Get the first element of each sub-array)
+    legalCandidates = legalCandidates.map(function(cell){
+        return cell[0].trim();
+    });
+    
+  
     
     //Extract Ballots
     var ballots = [];
