@@ -327,7 +327,7 @@ function runElection(legalCandidates, ballots) {
     //as single candidates
     var candidateGroups = identifyCandidateSets(ballots);
     var packedBallots = packBallots(candidateGroups, ballots);
-    var packedLegalCandidates = getLegalCandidates(packedBallots);
+    var packedLegalCandidates = getUniqueCandidates(packedBallots);
     
     //Convert ballots to matrices
     var matrices = [];
@@ -349,8 +349,8 @@ function runElection(legalCandidates, ballots) {
 
 
 //Input: A 3D array of candidates representing voters ranked preferences
-//Output: a 1D array of all unique candidates
-function getLegalCandidates(ballots) {
+//Output: a sorted 1D array of all unique candidates
+function getUniqueCandidates(ballots) {
     var legalCandidates = {};
     
     for (i=0; i<ballots.length; i++) {
@@ -796,7 +796,7 @@ function testSchulze() {
     var ballots = schulzeWikiExampleTestBallots();
     
     
-    var legalCandidates = getLegalCandidates(ballots);
+    var legalCandidates = getUniqueCandidates(ballots);
     
     var matrices = [];
     for (var i=0; i<ballots.length; i++) {
@@ -955,14 +955,19 @@ function test() {
     
     
     
-    //Test getLegalCandidates
-    expected = ["A1", "A2", "B", "C"];
-    actual = getLegalCandidates([[["A1", "A2"],["B"],["C"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("getLegalCandidates Basic", expected, actual);
+    //Test getUniqueCandidates
+    //Input: A 3D array of candidates representing voters ranked preferences
+    //Output: a sorted 1D array of all unique candidates
+  
+    //Pass in 3 couple ballots with the candidates A, B, C, and D scrambled in various ways.
+    //Expect that it will identify that the candidates are A, B, C and D.
+    expected = ["A", "B", "C", "D"];
+    actual = getUniqueCandidates([[["B","A"],["C"],["D"]], [["B"],["A"],["C"],["D"]], [["D"],["C"],["B"],["A"]]] );
+    allTestsPassed = allTestsPassed && expectEquals("getUniqueCandidates Basic", expected, actual);
     
     expected = ["A"];
-    actual = getLegalCandidates([[["A", "A"],["A"],["A"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("getLegalCandidates Dupes", expected, actual);
+    actual = getUniqueCandidates([[["A", "A"],["A"],["A"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("getUniqueCandidates Dupes", expected, actual);
     
     
     //Test identifyCandidateSets
