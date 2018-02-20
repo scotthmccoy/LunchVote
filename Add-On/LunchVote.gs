@@ -206,9 +206,10 @@ function LUNCHVOTE() {
 
 
 
-//Input: array of ballots (2-D arrays)
-//Output: A 2D array of candidates that are always grouped together
-function packCandidates(ballots) {
+//Input: A 3D Array; An array of ballots (each of which is a 2-D array)
+//Output: A 2D array; An array of arrays of candidates that are always grouped together on all ballots.
+//This can be helpful for "compressing" an election such that it is much faster to compute the results of.
+function identifyCandidateSets(ballots) {
     if (ballots.length == 0) {
         return [[]];
     }
@@ -217,34 +218,36 @@ function packCandidates(ballots) {
         return ballots;
     }
     
-    //Use the first ballot as the first set of candidateGroups
-    var candidateGroups = ballots[0].slice(0);
-    var candidateGroupsNext = [];
+    //Use the first ballots ranks as the first array of candidateSets
+    var candidateSets = ballots[0].slice(0);
+  
+    //Make an empty array to push the results into
+    var candidateSetsNext = [];
     
     //Walk the ballots
     for (var i=1; i<ballots.length; i++) {
         
         var ballot = ballots[i];
         
-        //Walk the ballot
+        //Walk each rank of this ballot
         for (var j=0; j<ballot.length; j++) {
             var ballotRank = ballot[j];
             
             //Walk all the candidate groups and find intersections
-            for (var k=0; k<candidateGroups.length; k++) {
-                var candidateGroup = candidateGroups[k];
-                var intersection = intersect_safe(candidateGroup, ballotRank);
+            for (var k=0; k<candidateSets.length; k++) {
+                var candidateSet = candidateSets[k];
+                var intersection = intersect_safe(candidateSet, ballotRank);
                 if (intersection.length >= 2) {
-                    candidateGroupsNext.push(intersection);
+                    candidateSetsNext.push(intersection);
                 }
             }
         }
         
-        candidateGroups = candidateGroupsNext;
-        candidateGroupsNext = [];
+        candidateSets = candidateSetsNext;
+        candidateSetsNext = [];
     }
     
-    return candidateGroups;
+    return candidateSets;
 }
 
 //Input:
@@ -284,7 +287,7 @@ function packBallots(packedCandidates, ballots) {
 
 
 //Input:
-//candidateGroups: the output of packCandidates on a set of ballots - a 2D array of
+//candidateGroups: the output of identifyCandidateSets on a set of ballots - a 2D array of
 //candidates that are always grouped together and may be treated as a single candidate.
 //electionResults: the output of runElection - a 2D array of candidates representing the outcome of the election assuming packed candidates.
 //Output:
@@ -322,7 +325,7 @@ function runElection(legalCandidates, ballots) {
     
     //Find groups of candidates that are always grouped together and treat them
     //as single candidates
-    var candidateGroups = packCandidates(ballots);
+    var candidateGroups = identifyCandidateSets(ballots);
     var packedBallots = packBallots(candidateGroups, ballots);
     var packedLegalCandidates = getLegalCandidates(packedBallots);
     
@@ -962,18 +965,18 @@ function test() {
     allTestsPassed = allTestsPassed && expectEquals("getLegalCandidates Dupes", expected, actual);
     
     
-    //Test packCandidates
+    //Test identifyCandidateSets
     expected = [["A", "B"]];
-    actual = packCandidates([[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("packCandidates 1", expected, actual);
+    actual = identifyCandidateSets([[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 1", expected, actual);
     
     expected = [["A", "B"], ["C", "D"]];
-    actual = packCandidates([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("packCandidates 2", expected, actual);
+    actual = identifyCandidateSets([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 2", expected, actual);
     
     expected = [];
-    actual = packCandidates([[["A", "X", "B"],["C"]], [["C"], ["A", "B"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("packCandidates 3 - contiguous", expected, actual);
+    actual = identifyCandidateSets([[["A", "X", "B"],["C"]], [["C"], ["A", "B"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 3 - contiguous", expected, actual);
     
     
     //Test packBallots
