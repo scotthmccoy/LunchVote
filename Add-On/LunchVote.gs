@@ -207,8 +207,8 @@ function LUNCHVOTE() {
 
 
 //Input: A 3D Array; An array of ballots (each of which is a 2-D array)
-//Output: A 2D array; An array of arrays of candidates that are always grouped together on all ballots.
-//This can be helpful for "compressing" an election such that it is much faster to compute the results of.
+//Output: A 2D array; An array of arrays of candidates that are always ranked at the same level as each other on all ballots.
+//This output is used by compressBallots and uncompressElectionResult.
 function identifyCandidateSets(ballots) {
     if (ballots.length == 0) {
         return [[]];
@@ -250,10 +250,19 @@ function identifyCandidateSets(ballots) {
     return candidateSets;
 }
 
+//Compresses an election into a smaller one that is faster and easier to compute the results of, but having the same election result once uncompressElectionResult is run.
 //Input:
-//packedCandidates: an 2D array of groups of candidates (sorted by name) that always occur together on ballots.
-//ballots: 3-D array of groups of candidates representing several voter's preferences.
-function packBallots(packedCandidates, ballots) {
+//candidateSets: A 2D array; An array of arrays of candidates that are always ranked at the same level as each other on all ballots.
+//ballots: 3-D array; an array of ballots, each of which is a 2D array of ranks of candidates representing a voter's preferences.
+//Output:
+//ballots: a modified version of the ballots array, with the first candidate in each candidateSet representing the whole set
+//Example:
+//A&B are always grouped, as are C&D.  There are four ballots, two of which have A&B beating C&D, one of which has C&D beating A&B, and
+//a final one where the voter ranked everyone the same, essentially abstaining:
+//compressBallots([["A","B"],["C","D"]],  [[["A","B"],["C","D"]], [["A","B"],["C","D"]], [["C","D"],["A","B"]], [["A","B","C","D"]])
+//The result would be:
+//[[["A"],["C"]], [["A"],["C"]], [["C"],["A"]], [["A", "C"]]]
+function compressBallots(candidateSets, ballots) {
     
     //Walk the ballots and allow the first candidate in a group to be a placeholder for
     //all candidates in that group.
@@ -266,16 +275,15 @@ function packBallots(packedCandidates, ballots) {
             var ballotRank = ballot[j];
             
             //Walk all the packedCandidates and find intersections
-            for (var k=0; k<packedCandidates.length; k++) {
-                var candidateGroup = packedCandidates[k];
+            for (var k=0; k<candidateSets.length; k++) {
+                var candidateSet = candidateSets[k];
                 
                 //Do we see the first candidate in the group anywhere in the ballot rank?
-                var groupFoundAtIndex = ballotRank.indexOf(candidateGroup[0]);
-                if (groupFoundAtIndex != -1) {
-                    //Delete all other candidates in the group from this ballot rank
-                    for (var l=1; l<candidateGroup.length; l++) {
-                        //Delete all but the first candidate in the group from the ballotRank.
-                        ballot[j].splice(ballot[j].indexOf(candidateGroup[l]),1);
+                var setFoundAtIndex = ballotRank.indexOf(candidateSet[0]);
+                if (setFoundAtIndex != -1) {
+                    //Delete all *other* candidates in the set from this ballot rank
+                    for (var l=1; l<candidateSet.length; l++) {
+                        ballot[j].splice(ballot[j].indexOf(candidateSet[l]),1);
                     }
                 }
             }
@@ -292,7 +300,7 @@ function packBallots(packedCandidates, ballots) {
 //electionResults: the output of runElection - a 2D array of candidates representing the outcome of the election assuming packed candidates.
 //Output:
 //A 2D array of candidates representing the "true" outcome of the election.
-function unpackElectionResults(candidateGroups, electionResults) {
+function uncompressElectionResult(candidateGroups, electionResults) {
     
     //Walk the ranks in the electionResult
     for (var i=0; i<electionResults.length; i++) {
@@ -325,26 +333,26 @@ function runElection(legalCandidates, ballots) {
     
     //Find groups of candidates that are always grouped together and treat them
     //as single candidates
-    var candidateGroups = identifyCandidateSets(ballots);
-    var packedBallots = packBallots(candidateGroups, ballots);
-    var packedLegalCandidates = getUniqueCandidates(packedBallots);
+    var candidateSets = identifyCandidateSets(ballots);
+    var compressedBallots = compressBallots(candidateSets, ballots);
+    var compresedUniqueCandidates = getUniqueCandidates(compressedBallots);
     
     //Convert ballots to matrices
     var matrices = [];
-    for (var i=0; i<packedBallots.length; i++) {
+    for (var i=0; i<compressedBallots.length; i++) {
         
-        var matrix = processAndConvert(packedBallots[i], packedLegalCandidates);
+        var matrix = processAndConvert(compressedBallots[i], compresedUniqueCandidates);
         
         matrices.push(matrix);
     }
     
     var pairwiseMatrix = addMatrices(matrices);
     var schulzeBeatpathMatrix = getSchulzeBeatpathMatrix(pairwiseMatrix);
-    var electionResults = convertSchulzeMatrixToElectionResult(schulzeBeatpathMatrix, packedLegalCandidates);
+    var electionResult = convertSchulzeMatrixToElectionResult(schulzeBeatpathMatrix, compresedUniqueCandidates);
     
     //Unpack the results
-    var unpackedResults = unpackElectionResults(candidateGroups, electionResults);
-    return unpackedResults;
+    var uncompressedResult = uncompressElectionResult(candidateSets, electionResult);
+    return uncompressedResult;
 }
 
 
@@ -958,7 +966,7 @@ function test() {
     //Test getUniqueCandidates
     //Input: A 3D array of candidates representing voters ranked preferences
     //Output: a sorted 1D array of all unique candidates
-  
+    
     //Pass in 3 couple ballots with the candidates A, B, C, and D scrambled in various ways.
     //Expect that it will identify that the candidates are A, B, C and D.
     expected = ["A", "B", "C", "D"];
@@ -984,24 +992,24 @@ function test() {
     allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 3 - contiguous", expected, actual);
     
     
-    //Test packBallots
+    //Test compressBallots
     expected = [[["A"],["C"]], [["C"], ["A"]]];
-    actual = packBallots([["A", "B"]],  [[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("packBallots 1", expected, actual);
+    actual = compressBallots([["A", "B"]],  [[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("compressBallots 1", expected, actual);
     
     expected = [[["A"],["E"],["C"]], [["E"], ["A", "C"]]];
-    actual = packBallots([["A", "B"],["C", "D"]],  [[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
-    allTestsPassed = allTestsPassed && expectEquals("packBallots 2", expected, actual);
+    actual = compressBallots([["A", "B"],["C", "D"]],  [[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    allTestsPassed = allTestsPassed && expectEquals("compressBallots 2", expected, actual);
     
     
-    //Test unpackElectionResults
+    //Test uncompressElectionResult
     expected = [["E"], ["A", "B", "C", "D"]];
-    actual = unpackElectionResults([["A", "B"],["C", "D"]], [["E"], ["A", "C"]]);
-    allTestsPassed = allTestsPassed && expectEquals("unpackElectionResults 1", expected, actual);
+    actual = uncompressElectionResult([["A", "B"],["C", "D"]], [["E"], ["A", "C"]]);
+    allTestsPassed = allTestsPassed && expectEquals("uncompressElectionResult 1", expected, actual);
     
     expected = [["A", "B"], ["E"], ["C", "D"]];
-    actual = unpackElectionResults([["A", "B"],["C", "D"]], [["A"], ["E"], ["C"]]);
-    allTestsPassed = allTestsPassed && expectEquals("unpackElectionResults 2", expected, actual);
+    actual = uncompressElectionResult([["A", "B"],["C", "D"]], [["A"], ["E"], ["C"]]);
+    allTestsPassed = allTestsPassed && expectEquals("uncompressElectionResult 2", expected, actual);
     
     
     //Test processBallot
@@ -1115,3 +1123,4 @@ function test() {
     }
     
 }
+
