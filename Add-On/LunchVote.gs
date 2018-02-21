@@ -114,9 +114,6 @@ function LUNCHVOTE() {
         var candidateRankPairings = [];
         var ballot = [];
         
-        
-        
-        
         //Walk the list of candidates. For every candidate that the voter put a rank next to,
         //Push the pairing of that candidate and the rank into candidateRankPairings.
         var maxRank = 0;
@@ -206,9 +203,16 @@ function LUNCHVOTE() {
 
 
 
-//Input: A 3D Array; An array of ballots (each of which is a 2-D array)
-//Output: A 2D array; An array of arrays of candidates that are always ranked at the same level as each other on all ballots.
+//Input: ballots is a 3D array, each element of which is a 2D array of ranks of candidates representing a single voter's preferences.
+//Output: A 2D array - An array of sorted arrays of candidates that are always ranked at the same level as each other on all ballots.
 //This output is used by compressBallots and uncompressElectionResult.
+//Example:
+//In this election, A&B are always found together on every ballot. Candidates C&D are as well.  There are four ballots, two of which
+//have A&B beating C&D, one of which has C&D beating A&B, and one ballot where the voter ranked everyone the same, essentially abstaining:
+//identifyCandidateSets([[["A","B"],["C","D"]], [["A","B"],["C","D"]], [["C","D"],["A","B"]], [["A","B","C","D"]])
+//The result would be:
+//[["A","B"],["C","D"]]
+//Showing that A&B and C&D are always together.
 function identifyCandidateSets(ballots) {
     if (ballots.length == 0) {
         return [[]];
@@ -220,7 +224,7 @@ function identifyCandidateSets(ballots) {
     
     //Use the first ballots ranks as the first array of candidateSets
     var candidateSets = ballots[0].slice(0);
-  
+    
     //Make an empty array to push the results into
     var candidateSetsNext = [];
     
@@ -250,18 +254,24 @@ function identifyCandidateSets(ballots) {
     return candidateSets;
 }
 
-//Compresses an election into a smaller one that is faster and easier to compute the results of, but having the same election result once uncompressElectionResult is run.
+//Compresses an election into a smaller one that will be faster and easier to compute the results of but will have the the same election
+//result once uncompressElectionResult is run on the election result.
+//
 //Input:
-//candidateSets: A 2D array; An array of arrays of candidates that are always ranked at the same level as each other on all ballots.
-//ballots: 3-D array; an array of ballots, each of which is a 2D array of ranks of candidates representing a voter's preferences.
-//Output:
-//ballots: a modified version of the ballots array, with the first candidate in each candidateSet representing the whole set
+//1) candidateSets: The output of identifyCandidateSets on ballots. This is A 2D array - An array of arrays of candidates that are always
+//ranked at the same level as each other on all ballots.
+//2) ballots: 3-D array - an array of ballots, each of which is a 2D array of ranks of candidates representing a single voter's preferences.
+//
+//Output: a modified version of the ballots array, with each occurance of a candidateSet replaced by the first candidate in the set, which
+//acts as a placeholder for that set.
+//
 //Example:
-//A&B are always grouped, as are C&D.  There are four ballots, two of which have A&B beating C&D, one of which has C&D beating A&B, and
-//a final one where the voter ranked everyone the same, essentially abstaining:
+//In this election, A&B are always found together on every ballot. Candidates C&D are as well.  There are four ballots, two of which
+//have A&B beating C&D, one of which has C&D beating A&B, and one ballot where the voter ranked everyone the same, essentially abstaining:
 //compressBallots([["A","B"],["C","D"]],  [[["A","B"],["C","D"]], [["A","B"],["C","D"]], [["C","D"],["A","B"]], [["A","B","C","D"]])
 //The result would be:
 //[[["A"],["C"]], [["A"],["C"]], [["C"],["A"]], [["A", "C"]]]
+//Where "A" is acting as a placeholder for the A&B set, and C is acting as a placeholder for the C&D set.
 function compressBallots(candidateSets, ballots) {
     
     //Walk the ballots and allow the first candidate in a group to be a placeholder for
@@ -294,33 +304,31 @@ function compressBallots(candidateSets, ballots) {
 }
 
 
+//Uncompresses the result of an election whose ballots were compressed using compressBallots.
 //Input:
-//candidateGroups: the output of identifyCandidateSets on a set of ballots - a 2D array of
-//candidates that are always grouped together and may be treated as a single candidate.
-//electionResults: the output of runElection - a 2D array of candidates representing the outcome of the election assuming packed candidates.
+//candidateSets: the output of identifyCandidateSets on a set of ballots - a 2D array of candidates that, since they are always grouped together, may be treated as a single candidate.
+//electionResult: the output of runElection - a 2D array of candidates representing the outcome of the election.
 //Output:
-//A 2D array of candidates representing the "true" outcome of the election.
-function uncompressElectionResult(candidateGroups, electionResults) {
+//A 2D array of candidates representing the true, uncompressed outcome of the election.
+function uncompressElectionResult(candidateGroups, electionResult) {
     
     //Walk the ranks in the electionResult
-    for (var i=0; i<electionResults.length; i++) {
-        
-        
+    for (var i=0; i<electionResult.length; i++) {
         
         //Search for the "placeholder" candidates and replace them with the unpacked candidates
         for (var j=0; j<candidateGroups.length; j++) {
             var candidateGroup = candidateGroups[j];
             
             //Do we see the first candidate in the group anywhere in the ballot rank?
-            var groupFoundAtIndex = electionResults[i].indexOf(candidateGroup[0]);
+            var groupFoundAtIndex = electionResult[i].indexOf(candidateGroup[0]);
             if (groupFoundAtIndex != -1) {
                 //Slice from 0 to where we found it, then concat the group, then concat the rest of the array.
-                electionResults[i] = electionResults[i].slice( 0, groupFoundAtIndex ).concat( candidateGroup ).concat( electionResults[i].slice( groupFoundAtIndex+1 ) );
+                electionResult[i] = electionResult[i].slice( 0, groupFoundAtIndex ).concat( candidateGroup ).concat( electionResult[i].slice( groupFoundAtIndex+1 ) );
             }
         }
     }
     
-    return electionResults;
+    return electionResult;
 }
 
 
