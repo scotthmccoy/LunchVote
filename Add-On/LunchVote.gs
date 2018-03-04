@@ -977,12 +977,12 @@ function test() {
     
     //Pass in 3 couple ballots with the candidates A, B, C, and D scrambled in various ways.
     //Expect that it will identify that the candidates are A, B, C and D.
-    expected = ["A", "B", "C", "D"];
-    actual = getUniqueCandidates([[["B","A"],["C"],["D"]], [["B"],["A"],["C"],["D"]], [["D"],["C"],["B"],["A"]]] );
+    expected = [1, 2, 3, 4];
+    actual = getUniqueCandidates([[[2,1],[3],[4]], [[2],[1],[3],[4]], [[4],[3],[2],[1]]] );
     allTestsPassed = allTestsPassed && expectEquals("getUniqueCandidates Basic", expected, actual);
     
-    expected = ["A"];
-    actual = getUniqueCandidates([[["A", "A"],["A"],["A"]]]);
+    expected = [1];
+    actual = getUniqueCandidates([[[1, 1],[1],[1]]]);
     allTestsPassed = allTestsPassed && expectEquals("getUniqueCandidates Dupes", expected, actual);
     
     //Test identifyCandidateSets
@@ -1022,15 +1022,15 @@ function test() {
     
     //Test processBallot
     expected = [{0:1}, {1:1}, {2:1}];
-    actual = processBallot([["A"],["B"],["C"]],  ["A", "B", "C"]);
+    actual = processBallot([[1],[2],[3]],  [1, 2, 3]);
     allTestsPassed = allTestsPassed && expectEquals("processBallot Basic", expected, actual);
     
     expected = [{0:1}, {1:1}, {2:1}, {3:1, 4:1, 5:1}]
-    actual = processBallot([["A"],["B"],["C"]],  ["A", "B", "C", "X", "Y", "Z"]);
+    actual = processBallot([[1],[2],[3]],  [1, 2, 3, 98, 99, 100]);
     allTestsPassed = allTestsPassed && expectEquals("processBallot Unmentioned Candidates", expected, actual);
     
     expected = [{2:1}, {0:1}, {1:1}];
-    actual = processBallot([["C"],["D"],["C"],["\n"],["A"]],  ["A", "B", "C"]);
+    actual = processBallot([[3],[4],[3],["\n"],[1]],  [1, 2, 3]);
     allTestsPassed = allTestsPassed && expectEquals("processBallot Complex", expected, actual);
     
     
@@ -1131,4 +1131,3 @@ function test() {
     }
     
 }
-
