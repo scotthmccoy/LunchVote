@@ -113,7 +113,7 @@ function LUNCHVOTE() {
         var voterInput = arguments[i];
         var candidateRankPairings = [];
         var ballot = [];
-        
+
         //Walk the list of candidates. For every candidate that the voter put a rank next to,
         //Push the pairing of that candidate and the rank into candidateRankPairings.
         var maxRank = 0;
@@ -224,7 +224,7 @@ function identifyCandidateSets(ballots) {
     
     //Use the first ballots ranks as the first array of candidateSets
     var candidateSets = ballots[0].slice(0);
-    
+  
     //Make an empty array to push the results into
     var candidateSetsNext = [];
     
@@ -593,7 +593,7 @@ function convertSchulzeMatrixToElectionResult(pairwiseMatrix, legalCandidates) {
 // Utilities
 //////////////////////////////////////////////////////////////
 
-//Removes duplicate elements from an array.
+//Sorts and removes duplicate elements from an array.
 function removeDups(array) {
     var outArray = [];
     array.sort();
@@ -985,38 +985,38 @@ function test() {
     actual = getUniqueCandidates([[["A", "A"],["A"],["A"]]]);
     allTestsPassed = allTestsPassed && expectEquals("getUniqueCandidates Dupes", expected, actual);
     
-    
     //Test identifyCandidateSets
-    expected = [["A", "B"]];
-    actual = identifyCandidateSets([[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    expected = [[1, 2]];
+    actual = identifyCandidateSets([[[1, 2],[3]], [[3], [1, 2]]]);
     allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 1", expected, actual);
     
-    expected = [["A", "B"], ["C", "D"]];
-    actual = identifyCandidateSets([[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    expected = [[1, 2], [3, 4]];
+    actual = identifyCandidateSets([[[1, 2],[5],[3, 4]], [[5], [1, 2, 3, 4]]]);
     allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 2", expected, actual);
     
     expected = [];
-    actual = identifyCandidateSets([[["A", "X", "B"],["C"]], [["C"], ["A", "B"]]]);
+    actual = identifyCandidateSets([[[1, 100, 2],[3]], [[3], [1, 2]]]);
     allTestsPassed = allTestsPassed && expectEquals("identifyCandidateSets 3 - contiguous", expected, actual);
-    
-    
+  
+  
+  
     //Test compressBallots
-    expected = [[["A"],["C"]], [["C"], ["A"]]];
-    actual = compressBallots([["A", "B"]],  [[["A", "B"],["C"]], [["C"], ["A", "B"]]]);
+    expected = [[[1],[3]], [[3], [1]]];
+    actual = compressBallots([[1, 2]],  [[[1, 2],[3]], [[3], [1, 2]]]);
     allTestsPassed = allTestsPassed && expectEquals("compressBallots 1", expected, actual);
     
-    expected = [[["A"],["E"],["C"]], [["E"], ["A", "C"]]];
-    actual = compressBallots([["A", "B"],["C", "D"]],  [[["A", "B"],["E"],["C", "D"]], [["E"], ["A", "B", "C", "D"]]]);
+    expected = [[[1],[5],[3]], [[5], [1, 3]]];
+    actual = compressBallots([[1, 2],[3, 4]],  [[[1, 2],[5],[3, 4]], [[5], [1, 2, 3, 4]]]);
     allTestsPassed = allTestsPassed && expectEquals("compressBallots 2", expected, actual);
     
     
     //Test uncompressElectionResult
-    expected = [["E"], ["A", "B", "C", "D"]];
-    actual = uncompressElectionResult([["A", "B"],["C", "D"]], [["E"], ["A", "C"]]);
+    expected = [[5], [1, 2, 3, 4]];
+    actual = uncompressElectionResult([[1, 2],[3, 4]], [[5], [1, 3]]);
     allTestsPassed = allTestsPassed && expectEquals("uncompressElectionResult 1", expected, actual);
     
-    expected = [["A", "B"], ["E"], ["C", "D"]];
-    actual = uncompressElectionResult([["A", "B"],["C", "D"]], [["A"], ["E"], ["C"]]);
+    expected = [[1, 2], [5], [3, 4]];
+    actual = uncompressElectionResult([[1, 2],[3, 4]], [[1], [5], [3]]);
     allTestsPassed = allTestsPassed && expectEquals("uncompressElectionResult 2", expected, actual);
     
     
