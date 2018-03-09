@@ -203,7 +203,8 @@ function LUNCHVOTE() {
 
 
 
-//Input: ballots is a 3D array, each element of which is a 2D array of ranks of candidates representing a single voter's preferences.
+//Input: 
+//1) ballots: 3-D array - an array of ballots, each of which is a 2D array of ranks of candidate's names. Represents a single voter's preferences.
 //Output: A 2D array - An array of sorted arrays of candidates that are always ranked at the same level as each other on all ballots.
 //This output is used by compressBallots and uncompressElectionResult.
 //Example:
@@ -260,7 +261,7 @@ function identifyCandidateSets(ballots) {
 //Input:
 //1) candidateSets: The output of identifyCandidateSets on ballots. This is A 2D array - An array of arrays of candidates that are always
 //ranked at the same level as each other on all ballots.
-//2) ballots: 3-D array - an array of ballots, each of which is a 2D array of ranks of candidates representing a single voter's preferences.
+//2) ballots: 3-D array - an array of ballots, each of which is a 2D array of ranks of candidate's names. Represents a single voter's preferences.
 //
 //Output: a modified version of the ballots array, with each occurance of a candidateSet replaced by the first candidate in the set, which
 //acts as a placeholder for that set.
@@ -333,8 +334,8 @@ function uncompressElectionResult(candidateGroups, electionResult) {
 
 
 //Input:
-//legalCandidates: a 2-D array
-//ballots: a 3-D array of candidate names representing several voters' preference orders
+//1) legalCandidates: a 2-D array
+//2) ballots: 3-D array - an array of ballots, each of which is a 2D array of ranks of candidate's names. Represents a single voter's preferences.
 //Output:
 //A 2D array of candidate names representing the election results
 function runElection(legalCandidates, ballots) {
@@ -364,10 +365,11 @@ function runElection(legalCandidates, ballots) {
 }
 
 
-//Input: A 3D array of candidates representing voters ranked preferences
+//Input: 
+//1) ballots: 3-D array - an array of ballots, each of which is a 2D array of ranks of candidate's names. Represents a single voter's preferences.
 //Output: a sorted 1D array of all unique candidates
 function getUniqueCandidates(ballots) {
-    var legalCandidates = {};
+    var uniqueCandidates = {};
     
     for (i=0; i<ballots.length; i++) {
         
@@ -382,24 +384,27 @@ function getUniqueCandidates(ballots) {
                 var candidate = String(ballotRank[k]).trim();
                 
                 if (candidate != "") {
-                    legalCandidates[candidate] = "1";
+                    uniqueCandidates[candidate] = "1";
                 }
             }
         }
     }
     
-    var ret =  Object.keys(legalCandidates).sort();
+    var ret =  Object.keys(uniqueCandidates).sort();
     return ret;
 }
 
 function processAndConvert(ballot, legalCandidates) {
-    var processedBallot = processBallot(ballot, legalCandidates);
+    var processedBallot = convertStringBallotToIDBallot(ballot, legalCandidates);
     var matrix = convertProcessedBallotToMatrix(processedBallot, legalCandidates.length);
     return matrix;
 }
 
+
+//Input: A ballot
 //Converts ballot from 2-d array of strings to a 1-d array of sets of legal candidate IDs.
-function processBallot(ballot, legalCandidates) {
+//This shouldn't be neccessary once we are using IDs.
+function convertStringBallotToIDBallot(ballot, candidateNames) {
     var ret = []
     var candidatesConsumed = {};
     
@@ -415,7 +420,7 @@ function processBallot(ballot, legalCandidates) {
             var candidate = String(ballotRow[j]).trim();
             if (candidate != "") {
                 
-                var candidateID = legalCandidates.indexOf(candidate);
+                var candidateID = candidateNames.indexOf(candidate);
                 if (candidateID != -1 && candidatesConsumed[candidateID] == undefined) {
                     set[candidateID] = 1;
                     candidatesConsumed[candidateID] = 1;
@@ -431,7 +436,7 @@ function processBallot(ballot, legalCandidates) {
     
     //Make one last set of all the candidates that aren't on the ballot and push them.
     var lastRank = {};
-    for (candidateID=0; candidateID<legalCandidates.length; candidateID++) {
+    for (candidateID=0; candidateID<candidateNames.length; candidateID++) {
         if (candidatesConsumed[candidateID] == undefined) {
             lastRank[candidateID] = 1;
         }
@@ -1020,18 +1025,20 @@ function test() {
     allTestsPassed = allTestsPassed && expectEquals("uncompressElectionResult 2", expected, actual);
     
     
-    //Test processBallot
+    //Test convertStringBallotToIDBallot
+    //Converts ballot from 2-D array of strings to a 1-d array of sets of candidate IDs.
+    //This shouldn't be neccessary once we are using IDs.  
     expected = [{0:1}, {1:1}, {2:1}];
-    actual = processBallot([["A"],["B"],["C"]],  ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processBallot Basic", expected, actual);
+    actual = convertStringBallotToIDBallot([["A"],["B"],["C"]],  ["A", "B", "C"]);
+    allTestsPassed = allTestsPassed && expectEquals("convertStringBallotToIDBallot Basic", expected, actual);
     
     expected = [{0:1}, {1:1}, {2:1}, {3:1, 4:1, 5:1}]
-    actual = processBallot([["A"],["B"],["C"]],  ["A", "B", "C", "X", "Y", "Z"]);
-    allTestsPassed = allTestsPassed && expectEquals("processBallot Unmentioned Candidates", expected, actual);
+    actual = convertStringBallotToIDBallot([["A"],["B"],["C"]],  ["A", "B", "C", "X", "Y", "Z"]);
+    allTestsPassed = allTestsPassed && expectEquals("convertStringBallotToIDBallot Unmentioned Candidates", expected, actual);
     
     expected = [{2:1}, {0:1}, {1:1}];
-    actual = processBallot([["C"],["D"],["C"],["\n"],["A"]],  ["A", "B", "C"]);
-    allTestsPassed = allTestsPassed && expectEquals("processBallot Complex", expected, actual);
+    actual = convertStringBallotToIDBallot([["C"],["D"],["C"],["\n"],["A"]],  ["A", "B", "C"]);
+    allTestsPassed = allTestsPassed && expectEquals("convertStringBallotToIDBallot Complex", expected, actual);
     
     
     
@@ -1131,4 +1138,3 @@ function test() {
     }
     
 }
-
